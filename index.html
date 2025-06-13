@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Agendamiento de Citas</title>
+  <title>🚞Agendamiento de Citas</title>
   <style>
     body { font-family: Arial; padding: 20px; }
     input, select, button { padding: 8px; margin: 5px; width: 100%; max-width: 300px; display: block; }
@@ -14,15 +14,19 @@
 
   <!-- MODAL DE NORMAS -->
   <div id="modalNormas" style="
-    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(0,0,0,0.8); display: flex; align-items: center; justify-content: center; z-index: 1000;
+  position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+  background: rgba(0,0,0,0.8); display: flex; align-items: center; justify-content: center; z-index: 1000;
+">
+  <div style="
+    background: white; padding: 20px; text-align: center; border-radius: 8px;
+    max-height: 90%; overflow-y: auto;
   ">
-    <div style="background: white; padding: 20px; text-align: center; border-radius: 8px;">
-      <img src="images/WhatsApp Image 2025-06-12 at 9.26.04 PM.jpeg" alt="Normas" style="width: 400px; height: 500px;;" />
-      <br><br>
-      <button onclick="aceptarNormas()" style="margin: 0 auto; display: block; background-color: #0099da; color: white; border: none; border-radius: 4px; padding: 10px; font-weight: bold;">He leído y acepto</button>
-    </div>
+    <img src="images/WhatsApp Image 2025-06-12 at 9.26.04 PM.jpeg" alt="Normas" style="width: 100%; height: auto; max-width: 400px;" />
+    <br><br>
+    <button onclick="aceptarNormas()" style="background-color: #0099da; color: white; border: none; border-radius: 4px; margin: 0 auto; display: block">He leído y acepto</button>
   </div>
+</div>
+
 
   <!-- FORMULARIO -->
   <div id="formularioCitas" style="display: none;">
