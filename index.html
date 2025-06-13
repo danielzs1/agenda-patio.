@@ -1,39 +1,30 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <title>Agendamiento de Citas</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Agendamiento General</title>
 </head>
 <body>
-  <h1>📆 Agendamiento de citas</h1>
+  <h2>📖Agendamiento de Citas</h2>
 
-  <form id="formCita">
-    <label>Transportadora:</label><br>
-    <input type="text" id="transportadora" required><br>
-
-    <label>Placa:</label><br>
-    <input type="text" id="placa" required><br>
-
-    <label>Conductor:</label><br>
-    <input type="text" id="conductor" required><br>
-
-    <label>Fecha y hora:</label><br>
-    <input type="datetime-local" id="fechaHora" required><br>
-
-    <label>Tipo de operación:</label><br>
-    <select id="tipoOperacion" required>
-      <option value="Carga">Carga</option>
-      <option value="Descarga">Descarga</option>
-    </select><br><br>
-
-    <button type="submit">Agendar cita</button>
-  </form>
-
-  <p id="mensaje"></p>
+  <div>
+    <label for="nombre">Nombre:</label>
+    <input type="text" id="nombre" required />
+    <br />
+    <label for="fecha">Fecha:</label>
+    <input type="date" id="fecha" required />
+    <br />
+    <label for="hora">Hora:</label>
+    <input type="time" id="hora" required step="1200" /> <!-- step=1200 = 20 min -->
+    <br />
+    <button id="btnAgendar">Agendar Cita</button>
+    <p id="mensaje"></p>
+  </div>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-    import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+    import { getFirestore, collection, query, where, getDocs, addDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyAGpefaI4KKoUzKbmAUp_QHH1QCJJon6Dg",
@@ -48,33 +39,49 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    const form = document.getElementById("formCita");
-    const mensaje = document.getElementById("mensaje");
+    function redondearAHoraFranja(horaStr) {
+      const [h, m] = horaStr.split(":").map(Number);
+      const totalMin = h * 60 + m;
+      const franjaInicio = Math.floor(totalMin / 20) * 20;
+      const horaRedondeada = `${String(Math.floor(franjaInicio / 60)).padStart(2, "0")}:${String(franjaInicio % 60).padStart(2, "0")}`;
+      return horaRedondeada;
+    }
 
-    form.addEventListener("submit", async (e) => {
-      e.preventDefault();
+    async function agendarCita() {
+      const nombre = document.getElementById("nombre").value.trim();
+      const fecha = document.getElementById("fecha").value;
+      const horaOriginal = document.getElementById("hora").value;
+      const mensaje = document.getElementById("mensaje");
 
-      const transportadora = document.getElementById("transportadora").value;
-      const placa = document.getElementById("placa").value;
-      const conductor = document.getElementById("conductor").value;
-      const fechaHora = document.getElementById("fechaHora").value;
-      const tipoOperacion = document.getElementById("tipoOperacion").value;
+      if (!nombre || !fecha || !horaOriginal) {
+        mensaje.innerText = "⛔ Todos los campos son obligatorios.";
+        return;
+      }
+
+      const hora = redondearAHoraFranja(horaOriginal);
+      const fechaHora = `${fecha}T${hora}`;
+
+      const citasRef = collection(db, "citas");
+      const q = query(citasRef, where("fechaHora", "==", fechaHora));
+      const snapshot = await getDocs(q);
+
+      if (!snapshot.empty) {
+        mensaje.innerText = `⛔ La franja de ${hora} ya está ocupada.`;
+        return;
+      }
 
       try {
-        await addDoc(collection(db, "citas"), {
-          transportadora,
-          placa,
-          conductor,
+        await addDoc(citasRef, {
+          nombre,
           fechaHora,
-          tipoOperacion
         });
-        mensaje.innerText = "✅ Cita agendada con éxito";
-        form.reset();
-      } catch (error) {
-        console.error("Error al guardar la cita:", error);
-        mensaje.innerText = "⛔ Error al guardar la cita";
+        mensaje.innerText = `✅ Cita agendada para las ${hora}`;
+      } catch (e) {
+        mensaje.innerText = "⛔ Error al agendar: " + e.message;
       }
-    });
+    }
+
+    document.getElementById("btnAgendar").addEventListener("click", agendarCita);
   </script>
 
 <hr>
