@@ -7,11 +7,9 @@
   
   <!-- Firebase SDKs -->
   <script type="module">
-    // Import Firebase modules
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-    import { getFirestore, collection, getDocs, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+    import { getFirestore, collection, getDocs, deleteDoc, doc, query, where } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-    // Firebase config
     const firebaseConfig = {
       apiKey: "AIzaSyAGpefaI4KKoUzKbmAUp_QHH1QCJJon6Dg",
       authDomain: "agendapatio-bd75e.firebaseapp.com",
@@ -22,50 +20,37 @@
       measurementId: "G-E6XPFLQVQR"
     };
 
-    // Inicializar Firebase y Firestore
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
-
-    // Hacer funciones globales para usarlas desde botones HTML
     window.db = db;
-    window.getDocs = getDocs;
     window.collection = collection;
+    window.getDocs = getDocs;
     window.deleteDoc = deleteDoc;
     window.doc = doc;
+    window.query = query;
+    window.where = where;
 
-    // Cargar citas al iniciar
-    window.addEventListener("DOMContentLoaded", cargarCitas);
+    window.addEventListener("DOMContentLoaded", () => cargarCitas());
   </script>
 
-  <!-- XLSX para exportar a Excel -->
+  <!-- XLSX -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      padding: 20px;
-    }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 15px;
-    }
-    th, td {
-      border: 1px solid #ccc;
-      padding: 8px;
-      text-align: center;
-    }
-    th {
-      background-color: #f4f4f4;
-    }
-    button {
-      padding: 5px 10px;
-      cursor: pointer;
-    }
+    body { font-family: Arial; padding: 20px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+    th, td { border: 1px solid #ccc; padding: 8px; text-align: center; }
+    th { background-color: #f4f4f4; }
+    button { padding: 5px 10px; margin: 5px; }
+    input[type="date"] { padding: 5px; }
   </style>
 </head>
 <body>
   <h2>Panel de Administración</h2>
+
+  <label for="fechaFiltro">Filtrar por fecha: </label>
+  <input type="date" id="fechaFiltro" />
+  <button onclick="cargarCitas()">Buscar</button>
   <button onclick="exportarExcel()">Exportar a Excel</button>
 
   <table id="tabla-citas">
@@ -76,21 +61,26 @@
         <th>Transportadora</th>
         <th>Conductor</th>
         <th>Placa</th>
-        <th>Hora</th>
         <th>Eliminar</th>
       </tr>
     </thead>
-    <tbody id="citas-body">
-      <!-- Citas se llenan aquí -->
-    </tbody>
+    <tbody id="citas-body"></tbody>
   </table>
 
   <script>
     async function cargarCitas() {
       const tbody = document.getElementById("citas-body");
       tbody.innerHTML = "";
+      const fechaFiltro = document.getElementById("fechaFiltro").value;
 
-      const snapshot = await window.getDocs(window.collection(window.db, "citas"));
+      let citasQuery = collection(db, "citas");
+
+      if (fechaFiltro) {
+        const q = query(citasQuery, where("fecha", "==", fechaFiltro));
+        citasQuery = q;
+      }
+
+      const snapshot = await getDocs(citasQuery);
 
       snapshot.forEach(docSnap => {
         const data = docSnap.data();
@@ -102,7 +92,6 @@
           <td>${data.transportadora || "N/A"}</td>
           <td>${data.conductor || "N/A"}</td>
           <td>${data.placa || "N/A"}</td>
-          <td>${data.hora || "N/A"}</td>
           <td><button onclick="eliminarCita('${docSnap.id}')">Eliminar</button></td>
         `;
 
@@ -112,7 +101,7 @@
 
     async function eliminarCita(id) {
       if (confirm("¿Estás seguro de eliminar esta cita?")) {
-        await window.deleteDoc(window.doc(window.db, "citas", id));
+        await deleteDoc(doc(db, "citas", id));
         cargarCitas();
       }
     }
