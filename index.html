@@ -1,31 +1,33 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Agendamiento General</title>
+  <meta charset="UTF-8">
+  <title>Agendamiento</title>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    label, select, input, button { display: block; margin: 10px 0; }
+    table, th, td { border: 1px solid black; border-collapse: collapse; padding: 5px; }
+  </style>
 </head>
 <body>
-  <h2>📖Agendamiento de Citas</h2>
+  <h2>Agendar Cita</h2>
+  <label>Transportadora:<input id="transportadora" type="text"></label>
+  <label>Placa:<input id="placa" type="text"></label>
+  <label>Conductor:<input id="conductor" type="text"></label>
+  <label>Fecha:<input id="fecha" type="date"></label>
+  <label>Franja horaria:
+    <select id="franja">
+      <option value="08:00 - 08:20">08:00 - 08:20</option>
+      <option value="08:20 - 08:40">08:20 - 08:40</option>
+      <option value="08:40 - 09:00">08:40 - 09:00</option>
+    </select>
+  </label>
+  <button onclick="agendarCita()">Agendar</button>
+  <p id="mensaje"></p>
 
-  <div>
-    <label for="nombre">Nombre:</label>
-    <input type="text" id="nombre" required />
-    <br />
-    <label for="fecha">Fecha:</label>
-    <input type="date" id="fecha" required />
-    <br />
-    <label for="hora">Hora:</label>
-    <input type="time" id="hora" required step="1200" /> <!-- step=1200 = 20 min -->
-    <br />
-    <button id="btnAgendar">Agendar Cita</button>
-    <p id="mensaje"></p>
-  </div>
-
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-    import { getFirestore, collection, query, where, getDocs, addDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-
+  <script>
     const firebaseConfig = {
       apiKey: "AIzaSyAGpefaI4KKoUzKbmAUp_QHH1QCJJon6Dg",
       authDomain: "agendapatio-bd75e.firebaseapp.com",
@@ -36,52 +38,43 @@
       measurementId: "G-E6XPFLQVQR"
     };
 
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
-
-    function redondearAHoraFranja(horaStr) {
-      const [h, m] = horaStr.split(":").map(Number);
-      const totalMin = h * 60 + m;
-      const franjaInicio = Math.floor(totalMin / 20) * 20;
-      const horaRedondeada = `${String(Math.floor(franjaInicio / 60)).padStart(2, "0")}:${String(franjaInicio % 60).padStart(2, "0")}`;
-      return horaRedondeada;
-    }
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
 
     async function agendarCita() {
-      const nombre = document.getElementById("nombre").value.trim();
-      const fecha = document.getElementById("fecha").value;
-      const horaOriginal = document.getElementById("hora").value;
-      const mensaje = document.getElementById("mensaje");
+      const transportadora = document.getElementById('transportadora').value.trim();
+      const placa = document.getElementById('placa').value.trim();
+      const conductor = document.getElementById('conductor').value.trim();
+      const fecha = document.getElementById('fecha').value;
+      const franja = document.getElementById('franja').value;
 
-      if (!nombre || !fecha || !horaOriginal) {
-        mensaje.innerText = "⛔ Todos los campos son obligatorios.";
+      if (!transportadora || !placa || !conductor || !fecha || !franja) {
+        document.getElementById('mensaje').innerText = 'Por favor completa todos los campos.';
         return;
       }
 
-      const hora = redondearAHoraFranja(horaOriginal);
-      const fechaHora = `${fecha}T${hora}`;
+      // Validar si ya hay 3 citas en esa fecha y franja
+      const snapshot = await db.collection("citas")
+        .where("fecha", "==", fecha)
+        .where("franja", "==", franja)
+        .get();
 
-      const citasRef = collection(db, "citas");
-      const q = query(citasRef, where("fechaHora", "==", fechaHora));
-      const snapshot = await getDocs(q);
-
-      if (!snapshot.empty) {
-        mensaje.innerText = `⛔ La franja de ${hora} ya está ocupada.`;
+      if (snapshot.size >= 3) {
+        document.getElementById('mensaje').innerText = `Ya no hay disponibilidad para la franja ${franja} del día ${fecha}`;
         return;
       }
 
-      try {
-        await addDoc(citasRef, {
-          nombre,
-          fechaHora,
-        });
-        mensaje.innerText = `✅ Cita agendada para las ${hora}`;
-      } catch (e) {
-        mensaje.innerText = "⛔ Error al agendar: " + e.message;
-      }
+      await db.collection("citas").add({
+        transportadora,
+        placa,
+        conductor,
+        fecha,
+        franja,
+        timestamp: firebase.firestore.FieldValue.serverTimestamp()
+      });
+
+      document.getElementById('mensaje').innerText = `Cita agendada para ${fecha} en la franja ${franja}`;
     }
-
-    document.getElementById("btnAgendar").addEventListener("click", agendarCita);
   </script>
 
 <hr>
