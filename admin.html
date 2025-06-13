@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Panel Administrativo</title>
+</head>
+<body>
+  <h1>🔐 Panel de Administración</h1>
+
+  <div id="loginSection">
+    <h3>Iniciar sesión</h3>
+    <input type="email" id="email" placeholder="Correo" required>
+    <input type="password" id="password" placeholder="Contraseña" required>
+    <button onclick="login()">Entrar</button>
+    <p id="loginMensaje"></p>
+  </div>
+
+  <div id="panel" style="display:none;">
+    <button onclick="logout()">Cerrar sesión</button>
+
+    <h2>📋 Citas agendadas</h2>
+
+    <label>Filtrar por franja horaria:</label><br>
+    <select id="filtroHorario">
+      <option value="">--Ver todas las franjas--</option>
+    </select><br><br>
+
+    <table border="1" id="tablaCitas">
+      <thead>
+        <tr>
+          <th>Transportadora</th>
+          <th>Placa</th>
+          <th>Conductor</th>
+          <th>Franja horaria</th>
+          <th>Tipo de operación</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <!-- Firebase SDK -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+    import { getFirestore, collection, query, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyAGpefaI4KKoUzKbmAUp_QHH1QCJJon6Dg",
+      authDomain: "agendapatio-bd75e.firebaseapp.com",
+      projectId: "agendapatio-bd75e",
+      storageBucket: "agendapatio-bd75e.firebasestorage.app",
+      messagingSenderId: "2629668570",
+      appId: "1:2629668570:web:13ac210ecf525e09a99fe3",
+      measurementId: "G-E6XPFLQVQR"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    function login() {
+      const email = document.getElementById("email").value;
+      const pass = document.getElementById("password").value;
+      signInWithEmailAndPassword(auth, email, pass)
+        .then(() => {
+          document.getElementById("loginMensaje").innerText = "";
+        })
+        .catch(err => {
+          document.getElementById("loginMensaje").innerText = "⛔ Usuario o contraseña inválidos";
+        });
+    }
+
+    function logout() {
+      signOut(auth);
+    }
+
+    function mostrarCitas() {
+      const tabla = document.getElementById("tablaCitas").getElementsByTagName("tbody")[0];
+      const filtro = document.getElementById("filtroHorario");
+      const q = query(collection(db, "citas"));
+
+      onSnapshot(q, (snapshot) => {
+        tabla.innerHTML = "";
+        const filtroValor = filtro.value;
+
+        snapshot.forEach(doc => {
+          const data = doc.data();
+          const hora = data.fechaHora?.split("T")[1];
+          if (filtroValor === "" || hora === filtroValor) {
+            const fila = tabla.insertRow();
+            fila.insertCell(0).innerText = data.transportadora || "";
+            fila.insertCell(1).innerText = data.placa || "";
+            fila.insertCell(2).innerText = data.conductor || "";
+            fila.insertCell(3).innerText = hora || "";
+            fila.insertCell(4).innerText = data.tipoOperacion || "";
+          }
+        });
+      });
+
+      filtro.addEventListener("change", mostrarCitas);
+    }
+
+    function generarFranjas() {
+      const select = document.getElementById("filtroHorario");
+      const inicio = 8 * 60;
+      const fin = 17 * 60;
+      const intervalo = 20;
+
+      for (let min = inicio; min < fin; min += intervalo) {
+        const hInicio = String(Math.floor(min / 60)).padStart(2, "0") + ":" + String(min % 60).padStart(2, "0");
+        const hFin = String(Math.floor((min + intervalo) / 60)).padStart(2, "0") + ":" + String((min + intervalo) % 60).padStart(2, "0");
+
+        const opt = document.createElement("option");
+        opt.value = hInicio;
+        opt.textContent = `${hInicio} - ${hFin}`;
+        select.appendChild(opt);
+      }
+    }
+
+    generarFranjas();
+
+    // Proteger acceso
+    onAuthStateChanged(auth, user => {
+      if (user) {
+        document.getElementById("loginSection").style.display = "none";
+        document.getElementById("panel").style.display = "block";
+        mostrarCitas();
+      } else {
+        document.getElementById("loginSection").style.display = "block";
+        document.getElementById("panel").style.display = "none";
+      }
+    });
+  </script>
+</body>
+</html>
