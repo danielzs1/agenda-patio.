@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Agendamiento de Citas - Patio de Contenedores</title>
+</head>
+<body>
+  <h1>📅 Agendar Cita</h1>
+
+  <form id="formulario">
+    <input type="text" id="transportadora" placeholder="Transportadora" required><br>
+    <input type="text" id="placa" placeholder="Placa" required><br>
+    <input type="text" id="conductor" placeholder="Nombre del conductor" required><br>
+    <select id="tipoOperacion" required>
+      <option value="">Tipo de operación</option>
+      <option value="Entrega">Entrega</option>
+      <option value="Recojo">Recojo</option>
+    </select><br>
+    <label>Selecciona franja horaria:</label><br>
+    <select id="franjaHorario" required>
+      <option value="">--Seleccione--</option>
+    </select><br><br>
+    <button type="submit">Agendar</button>
+  </form>
+
+  <p id="mensaje"></p>
+
+  <!-- Firebase SDK -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getFirestore, collection, addDoc, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyAGpefaI4KKoUzKbmAUp_QHH1QCJJon6Dg",
+      authDomain: "agendapatio-bd75e.firebaseapp.com",
+      projectId: "agendapatio-bd75e",
+      storageBucket: "agendapatio-bd75e.firebasestorage.app",
+      messagingSenderId: "2629668570",
+      appId: "1:2629668570:web:13ac210ecf525e09a99fe3",
+      measurementId: "G-E6XPFLQVQR"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    function generarFranjasHorario() {
+      const select = document.getElementById("franjaHorario");
+      const inicio = 8 * 60;
+      const fin = 17 * 60;
+      const intervalo = 20;
+
+      for (let min = inicio; min < fin; min += intervalo) {
+        const hInicio = String(Math.floor(min / 60)).padStart(2, "0") + ":" + String(min % 60).padStart(2, "0");
+        const hFin = String(Math.floor((min + intervalo) / 60)).padStart(2, "0") + ":" + String((min + intervalo) % 60).padStart(2, "0");
+        const option = document.createElement("option");
+        option.value = hInicio;
+        option.textContent = `${hInicio} - ${hFin}`;
+        select.appendChild(option);
+      }
+    }
+
+    async function validarFranjasDisponibles() {
+      const fecha = new Date().toISOString().split('T')[0];
+      const franjaSelect = document.getElementById("franjaHorario");
+
+      for (const option of franjaSelect.options) {
+        if (option.value === "") continue;
+        const franja = option.value;
+        const fechaHora = `${fecha}T${franja}`;
+        const q = query(collection(db, "citas"), where("fechaHora", "==", fechaHora));
+        const snapshot = await getDocs(q);
+        option.disabled = snapshot.size >= 3;
+        option.textContent = snapshot.size >= 3 ? `${option.textContent} - OCUPADA` : option.textContent;
+      }
+    }
+
+    generarFranjasHorario().then(validarFranjasDisponibles);
+
+    document.getElementById("formulario").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const transportadora = document.getElementById("transportadora").value;
+      const placa = document.getElementById("placa").value;
+      const conductor = document.getElementById("conductor").value;
+      const tipoOperacion = document.getElementById("tipoOperacion").value;
+      const franja = document.getElementById("franjaHorario").value;
+      const fechaHora = `${new Date().toISOString().split('T')[0]}T${franja}`;
+
+      const q = query(collection(db, "citas"), where("fechaHora", "==", fechaHora));
+      const snapshot = await getDocs(q);
+      if (snapshot.size >= 3) {
+        document.getElementById("mensaje").innerText = "⛔ Esta franja ya está llena. Intenta con otra.";
+        return;
+      }
+
+      try {
+        await addDoc(collection(db, "citas"), {
+          transportadora, placa, conductor, tipoOperacion, fechaHora
+        });
+        document.getElementById("mensaje").innerText = "✅ Cita agendada con éxito.";
+        document.getElementById("formulario").reset();
+        validarFranjasDisponibles();
+      } catch (error) {
+        document.getElementById("mensaje").innerText = "❌ Error al guardar la cita.";
+      }
+    });
+  </script>
+  <hr>
+  <p>🔐 <a href="admin.html">Login interno (solo personal autorizado)</a></p>  
+</body>
+</html>
+
