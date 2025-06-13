@@ -1,27 +1,51 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Panel de Administración</title>
-  <script type="module" src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js"></script>
-  <script type="module" src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js"></script>
-  <script src="https://cdn.sheetjs.com/xlsx-0.19.3/package/xlsx.full.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <style>
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 8px;
+      text-align: left;
+    }
+    th {
+      background-color: #f2f2f2;
+    }
+    button {
+      padding: 5px 10px;
+    }
+  </style>
 </head>
 <body>
-  <h1>Panel de Administración</h1>
+  <h2>Agenda de Citas - Admin</h2>
   <button onclick="exportarExcel()">Exportar a Excel</button>
-  <div>
-    <label for="fechaFiltro">Filtrar por fecha: </label>
-    <input type="date" id="fechaFiltro" onchange="filtrarPorFecha()">
-  </div>
-  <ul id="lista-citas"></ul>
+  <table id="tablaCitas">
+    <thead>
+      <tr>
+        <th>Nombre</th>
+        <th>Placa</th>
+        <th>Transportadora</th>
+        <th>Conductor</th>
+        <th>Fecha</th>
+        <th>Franja Horaria</th>
+        <th>Hora</th>
+        <th>Eliminar</th>
+      </tr>
+    </thead>
+    <tbody id="citasBody"></tbody>
+  </table>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
-    import {
-      getFirestore, collection, getDocs, deleteDoc, doc, query, where
-    } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+    import { getFirestore, collection, getDocs, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyAGpefaI4KKoUzKbmAUp_QHH1QCJJon6Dg",
@@ -30,78 +54,49 @@
       storageBucket: "agendapatio-bd75e.appspot.com",
       messagingSenderId: "2629668570",
       appId: "1:2629668570:web:13ac210ecf525e09a99fe3",
+      measurementId: "G-E6XPFLQVQR"
     };
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
-    const citasRef = collection(db, "citas");
 
-    let todasLasCitas = [];
+    const citasBody = document.getElementById("citasBody");
 
     async function cargarCitas() {
-      const querySnapshot = await getDocs(citasRef);
-      todasLasCitas = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      mostrarCitas(todasLasCitas);
-    }
+      const querySnapshot = await getDocs(collection(db, "citas"));
+      citasBody.innerHTML = "";
 
-    function mostrarCitas(citas) {
-      const lista = document.getElementById("lista-citas");
-      lista.innerHTML = "";
-
-      citas.forEach(cita => {
-        const li = document.createElement("li");
-        li.innerHTML = `
-          <strong>${cita.nombre}</strong> -
-          Fecha: ${cita.fecha} -
-          Franja: ${cita.franja} -
-          Hora: ${cita.hora} -
-          Placa: ${cita.placa} -
-          Transportadora: ${cita.transportadora} -
-          Conductor: ${cita.conductor} 
-          <button onclick="eliminarCita('${cita.id}')">Eliminar</button>
+      querySnapshot.forEach((docu) => {
+        const data = docu.data();
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td>${data.nombre || ""}</td>
+          <td>${data.placa || ""}</td>
+          <td>${data.transportadora || ""}</td>
+          <td>${data.conductor || ""}</td>
+          <td>${data.fecha || ""}</td>
+          <td>${data.franja || ""}</td>
+          <td>${data.hora || ""}</td>
+          <td><button onclick="eliminarCita('${docu.id}')">Eliminar</button></td>
         `;
-        lista.appendChild(li);
+        citasBody.appendChild(row);
       });
     }
 
-    window.eliminarCita = async function(id) {
-      const confirmacion = confirm("¿Estás seguro que deseas eliminar esta cita?");
-      if (confirmacion) {
-        await deleteDoc(doc(db, "citas", id));
-        cargarCitas();
-      }
-    }
-
-    window.exportarExcel = function() {
-      const wsData = [
-        ["Nombre", "Fecha", "Franja", "Hora", "Placa", "Transportadora", "Conductor"]
-      ];
-      todasLasCitas.forEach(cita => {
-        wsData.push([
-          cita.nombre,
-          cita.fecha,
-          cita.franja,
-          cita.hora,
-          cita.placa,
-          cita.transportadora,
-          cita.conductor
-        ]);
-      });
-
-      const wb = XLSX.utils.book_new();
-      const ws = XLSX.utils.aoa_to_sheet(wsData);
-      XLSX.utils.book_append_sheet(wb, ws, "Citas");
-      XLSX.writeFile(wb, "citas.xlsx");
-    }
-
-    window.filtrarPorFecha = function() {
-      const fechaSeleccionada = document.getElementById("fechaFiltro").value;
-      if (!fechaSeleccionada) return mostrarCitas(todasLasCitas);
-      const filtradas = todasLasCitas.filter(c => c.fecha === fechaSeleccionada);
-      mostrarCitas(filtradas);
-    }
+    window.eliminarCita = async (id) => {
+      await deleteDoc(doc(db, "citas", id));
+      cargarCitas();
+    };
 
     cargarCitas();
+  </script>
+
+  <script>
+    function exportarExcel() {
+      const tabla = document.getElementById('tablaCitas');
+      const wb = XLSX.utils.table_to_book(tabla, { sheet: "Citas" });
+      XLSX.writeFile(wb, "citas.xlsx");
+    }
   </script>
 </body>
 </html>
