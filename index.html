@@ -2,32 +2,12 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Agendamiento</title>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
-  <style>
-    body { font-family: Arial, sans-serif; margin: 20px; }
-    label, select, input, button { display: block; margin: 10px 0; }
-    table, th, td { border: 1px solid black; border-collapse: collapse; padding: 5px; }
-  </style>
-</head>
-<body>
-  <h2>Agendar Cita</h2>
-  <label>Transportadora:<input id="transportadora" type="text"></label>
-  <label>Placa:<input id="placa" type="text"></label>
-  <label>Conductor:<input id="conductor" type="text"></label>
-  <label>Fecha:<input id="fecha" type="date"></label>
-  <label>Franja horaria:
-    <select id="franja">
-      <option value="08:00 - 08:20">08:00 - 08:20</option>
-      <option value="08:20 - 08:40">08:20 - 08:40</option>
-      <option value="08:40 - 09:00">08:40 - 09:00</option>
-    </select>
-  </label>
-  <button onclick="agendarCita()">Agendar</button>
-  <p id="mensaje"></p>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Agendar Cita</title>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getFirestore, collection, addDoc, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-  <script>
     const firebaseConfig = {
       apiKey: "AIzaSyAGpefaI4KKoUzKbmAUp_QHH1QCJJon6Dg",
       authDomain: "agendapatio-bd75e.firebaseapp.com",
@@ -38,44 +18,78 @@
       measurementId: "G-E6XPFLQVQR"
     };
 
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
 
-    async function agendarCita() {
-      const transportadora = document.getElementById('transportadora').value.trim();
-      const placa = document.getElementById('placa').value.trim();
-      const conductor = document.getElementById('conductor').value.trim();
-      const fecha = document.getElementById('fecha').value;
-      const franja = document.getElementById('franja').value;
+    window.agendarCita = async function () {
+      const transportadora = document.getElementById("transportadora").value;
+      const conductor = document.getElementById("conductor").value;
+      const placa = document.getElementById("placa").value;
+      const fecha = document.getElementById("fecha").value;
+      const franjaHoraria = document.getElementById("franja").value;
 
-      if (!transportadora || !placa || !conductor || !fecha || !franja) {
-        document.getElementById('mensaje').innerText = 'Por favor completa todos los campos.';
+      if (!transportadora || !conductor || !placa || !fecha || !franjaHoraria) {
+        alert("Por favor completa todos los campos.");
         return;
       }
 
-      // Validar si ya hay 3 citas en esa fecha y franja
-      const snapshot = await db.collection("citas")
-        .where("fecha", "==", fecha)
-        .where("franja", "==", franja)
-        .get();
+      const citasRef = collection(db, "citas");
+      const q = query(citasRef, where("fecha", "==", fecha), where("franjaHoraria", "==", franjaHoraria));
+      const querySnapshot = await getDocs(q);
 
-      if (snapshot.size >= 3) {
-        document.getElementById('mensaje').innerText = `Ya no hay disponibilidad para la franja ${franja} del día ${fecha}`;
+      if (!querySnapshot.empty) {
+        alert("Ya hay una cita agendada para esa fecha y franja horaria. Elige otra.");
         return;
       }
 
-      await db.collection("citas").add({
+      await addDoc(citasRef, {
         transportadora,
-        placa,
         conductor,
+        placa,
         fecha,
-        franja,
-        timestamp: firebase.firestore.FieldValue.serverTimestamp()
+        franjaHoraria
       });
 
-      document.getElementById('mensaje').innerText = `Cita agendada para ${fecha} en la franja ${franja}`;
+      const mensaje = document.getElementById("mensaje");
+      mensaje.innerText = "Cita agendada correctamente.";
+      setTimeout(() => mensaje.innerText = "", 2500);
+
+      document.getElementById("form-cita").reset();
     }
   </script>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; }
+    label { display: block; margin-top: 10px; }
+    input, select { width: 100%; padding: 8px; margin-top: 5px; }
+    button { margin-top: 15px; padding: 10px; width: 100%; background: #2a9d8f; color: white; border: none; cursor: pointer; }
+    #mensaje { margin-top: 10px; color: green; font-weight: bold; }
+  </style>
+</head>
+<body>
+  <h2>Agendar Cita</h2>
+  <form id="form-cita" onsubmit="event.preventDefault(); agendarCita();">
+    <label>Transportadora</label>
+    <input type="text" id="transportadora">
+
+    <label>Conductor</label>
+    <input type="text" id="conductor">
+
+    <label>Placa</label>
+    <input type="text" id="placa">
+
+    <label>Fecha</label>
+    <input type="date" id="fecha">
+
+    <label>Franja Horaria</label>
+    <select id="franja">
+      <option value="8:00 a 8:20">8:00 a 8:20</option>
+      <option value="8:20 a 8:40">8:20 a 8:40</option>
+      <option value="8:40 a 9:00">8:40 a 9:00</option>
+    </select>
+
+    <button type="submit">Agendar</button>
+    <div id="mensaje"></div>
+  </form>
 
 <hr>
 <p>🔐 <a href="admin.html">Login interno (solo personal autorizado)</a></p>

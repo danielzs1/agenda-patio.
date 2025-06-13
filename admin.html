@@ -4,34 +4,6 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Panel de Administración</title>
-  
-  <!-- Firebase SDKs -->
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-    import { getFirestore, collection, getDocs, deleteDoc, doc, query, where } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-
-    const firebaseConfig = {
-      apiKey: "AIzaSyAGpefaI4KKoUzKbmAUp_QHH1QCJJon6Dg",
-      authDomain: "agendapatio-bd75e.firebaseapp.com",
-      projectId: "agendapatio-bd75e",
-      storageBucket: "agendapatio-bd75e.appspot.com",
-      messagingSenderId: "2629668570",
-      appId: "1:2629668570:web:13ac210ecf525e09a99fe3",
-      measurementId: "G-E6XPFLQVQR"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
-    window.db = db;
-    window.collection = collection;
-    window.getDocs = getDocs;
-    window.deleteDoc = deleteDoc;
-    window.doc = doc;
-    window.query = query;
-    window.where = where;
-
-    window.addEventListener("DOMContentLoaded", () => cargarCitas());
-  </script>
 
   <!-- XLSX -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -43,15 +15,26 @@
     th { background-color: #f4f4f4; }
     button { padding: 5px 10px; margin: 5px; }
     input[type="date"] { padding: 5px; }
+    #login { max-width: 300px; margin: auto; padding: 20px; border: 1px solid #ccc; }
   </style>
 </head>
 <body>
+
+<div id="login" style="display:none;">
+  <h3>Iniciar sesión</h3>
+  <input type="email" id="email" placeholder="Correo" /><br><br>
+  <input type="password" id="password" placeholder="Contraseña" /><br><br>
+  <button onclick="login()">Ingresar</button>
+</div>
+
+<div id="adminPanel" style="display:none;">
   <h2>Panel de Administración</h2>
 
   <label for="fechaFiltro">Filtrar por fecha: </label>
   <input type="date" id="fechaFiltro" />
   <button onclick="cargarCitas()">Buscar</button>
   <button onclick="exportarExcel()">Exportar a Excel</button>
+  <button onclick="logout()">Cerrar sesión</button>
 
   <table id="tabla-citas">
     <thead>
@@ -66,51 +49,93 @@
     </thead>
     <tbody id="citas-body"></tbody>
   </table>
+</div>
 
-  <script>
-    async function cargarCitas() {
-      const tbody = document.getElementById("citas-body");
-      tbody.innerHTML = "";
-      const fechaFiltro = document.getElementById("fechaFiltro").value;
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+  import { getFirestore, collection, getDocs, deleteDoc, doc, query, where } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-      let citasQuery = collection(db, "citas");
+  const firebaseConfig = {
+    apiKey: "AIzaSyAGpefaI4KKoUzKbmAUp_QHH1QCJJon6Dg",
+    authDomain: "agendapatio-bd75e.firebaseapp.com",
+    projectId: "agendapatio-bd75e",
+    storageBucket: "agendapatio-bd75e.appspot.com",
+    messagingSenderId: "2629668570",
+    appId: "1:2629668570:web:13ac210ecf525e09a99fe3",
+    measurementId: "G-E6XPFLQVQR"
+  };
 
-      if (fechaFiltro) {
-        const q = query(citasQuery, where("fecha", "==", fechaFiltro));
-        citasQuery = q;
-      }
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+  const auth = getAuth(app);
 
-      const snapshot = await getDocs(citasQuery);
+  // Mostrar el login si no hay usuario
+  onAuthStateChanged(auth, (user) => {
+    if (user) {
+      document.getElementById("login").style.display = "none";
+      document.getElementById("adminPanel").style.display = "block";
+      cargarCitas();
+    } else {
+      document.getElementById("adminPanel").style.display = "none";
+      document.getElementById("login").style.display = "block";
+    }
+  });
 
-      snapshot.forEach(docSnap => {
-        const data = docSnap.data();
-        const tr = document.createElement("tr");
+  window.login = async function () {
+    const email = document.getElementById("email").value;
+    const password = document.getElementById("password").value;
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+    } catch (error) {
+      alert("Error al iniciar sesión");
+    }
+  }
 
-        tr.innerHTML = `
-          <td>${data.fecha || "Sin fecha"}</td>
-          <td>${data.franjaHoraria || "Sin franja"}</td>
-          <td>${data.transportadora || "N/A"}</td>
-          <td>${data.conductor || "N/A"}</td>
-          <td>${data.placa || "N/A"}</td>
-          <td><button onclick="eliminarCita('${docSnap.id}')">Eliminar</button></td>
-        `;
+  window.logout = function () {
+    signOut(auth);
+  }
 
-        tbody.appendChild(tr);
-      });
+  window.cargarCitas = async function () {
+    const tbody = document.getElementById("citas-body");
+    tbody.innerHTML = "";
+    const fechaFiltro = document.getElementById("fechaFiltro").value;
+
+    let citasQuery = collection(db, "citas");
+    if (fechaFiltro) {
+      citasQuery = query(citasQuery, where("fecha", "==", fechaFiltro));
     }
 
-    async function eliminarCita(id) {
-      if (confirm("¿Estás seguro de eliminar esta cita?")) {
-        await deleteDoc(doc(db, "citas", id));
-        cargarCitas();
-      }
-    }
+    const snapshot = await getDocs(citasQuery);
+    snapshot.forEach(docSnap => {
+      const data = docSnap.data();
+      const tr = document.createElement("tr");
 
-    function exportarExcel() {
-      const table = document.getElementById("tabla-citas");
-      const wb = XLSX.utils.table_to_book(table, { sheet: "Citas" });
-      XLSX.writeFile(wb, "citas.xlsx");
+      tr.innerHTML = `
+        <td>${data.fecha || "Sin fecha"}</td>
+        <td>${data.franjaHoraria || "Sin franja"}</td>
+        <td>${data.transportadora || "N/A"}</td>
+        <td>${data.conductor || "N/A"}</td>
+        <td>${data.placa || "N/A"}</td>
+        <td><button onclick="eliminarCita('${docSnap.id}')">Eliminar</button></td>
+      `;
+
+      tbody.appendChild(tr);
+    });
+  }
+
+  window.eliminarCita = async function (id) {
+    if (confirm("¿Estás seguro de eliminar esta cita?")) {
+      await deleteDoc(doc(db, "citas", id));
+      cargarCitas();
     }
-  </script>
+  }
+
+  window.exportarExcel = function () {
+    const table = document.getElementById("tabla-citas");
+    const wb = XLSX.utils.table_to_book(table, { sheet: "Citas" });
+    XLSX.writeFile(wb, "citas.xlsx");
+  }
+</script>
 </body>
 </html>
