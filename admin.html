@@ -1,48 +1,27 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <title>Panel Administrativo</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Panel de Administración</title>
+  <script type="module" src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js"></script>
+  <script type="module" src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js"></script>
+  <script src="https://cdn.sheetjs.com/xlsx-0.19.3/package/xlsx.full.min.js"></script>
 </head>
 <body>
-  <h1>🔐 Panel de Administración</h1>
-
-  <div id="loginSection">
-    <h3>Iniciar sesión</h3>
-    <input type="email" id="email" placeholder="Correo" required>
-    <input type="password" id="password" placeholder="Contraseña" required>
-    <button id="loginBtn">Entrar</button>
-    <p id="loginMensaje"></p>
+  <h1>Panel de Administración</h1>
+  <button onclick="exportarExcel()">Exportar a Excel</button>
+  <div>
+    <label for="fechaFiltro">Filtrar por fecha: </label>
+    <input type="date" id="fechaFiltro" onchange="filtrarPorFecha()">
   </div>
-
-  <div id="panel" style="display:none;">
-    <button id="logoutBtn">Cerrar sesión</button>
-
-    <h2>📋 Citas agendadas</h2>
-
-    <label>Filtrar por franja horaria:</label><br>
-    <select id="filtroHorario">
-      <option value="">--Ver todas las franjas--</option>
-    </select><br><br>
-
-    <table border="1" id="tablaCitas">
-      <thead>
-        <tr>
-          <th>Transportadora</th>
-          <th>Placa</th>
-          <th>Conductor</th>
-          <th>Franja horaria</th>
-          <th>Tipo de operación</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
-  </div>
+  <ul id="lista-citas"></ul>
 
   <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-    import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-    import { getFirestore, collection, query, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+    import {
+      getFirestore, collection, getDocs, deleteDoc, doc, query, where
+    } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyAGpefaI4KKoUzKbmAUp_QHH1QCJJon6Dg",
@@ -51,87 +30,78 @@
       storageBucket: "agendapatio-bd75e.appspot.com",
       messagingSenderId: "2629668570",
       appId: "1:2629668570:web:13ac210ecf525e09a99fe3",
-      measurementId: "G-E6XPFLQVQR"
     };
 
     const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
     const db = getFirestore(app);
+    const citasRef = collection(db, "citas");
 
-    const loginBtn = document.getElementById("loginBtn");
-    const logoutBtn = document.getElementById("logoutBtn");
+    let todasLasCitas = [];
 
-    loginBtn.addEventListener("click", async () => {
-      const email = document.getElementById("email").value;
-      const pass = document.getElementById("password").value;
+    async function cargarCitas() {
+      const querySnapshot = await getDocs(citasRef);
+      todasLasCitas = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      mostrarCitas(todasLasCitas);
+    }
 
-      try {
-        await signInWithEmailAndPassword(auth, email, pass);
-        document.getElementById("loginMensaje").innerText = "";
-      } catch (err) {
-        document.getElementById("loginMensaje").innerText = "⛔ Usuario o contraseña inválidos";
+    function mostrarCitas(citas) {
+      const lista = document.getElementById("lista-citas");
+      lista.innerHTML = "";
+
+      citas.forEach(cita => {
+        const li = document.createElement("li");
+        li.innerHTML = `
+          <strong>${cita.nombre}</strong> -
+          Fecha: ${cita.fecha} -
+          Franja: ${cita.franja} -
+          Hora: ${cita.hora} -
+          Placa: ${cita.placa} -
+          Transportadora: ${cita.transportadora} -
+          Conductor: ${cita.conductor} 
+          <button onclick="eliminarCita('${cita.id}')">Eliminar</button>
+        `;
+        lista.appendChild(li);
+      });
+    }
+
+    window.eliminarCita = async function(id) {
+      const confirmacion = confirm("¿Estás seguro que deseas eliminar esta cita?");
+      if (confirmacion) {
+        await deleteDoc(doc(db, "citas", id));
+        cargarCitas();
       }
-    });
+    }
 
-    logoutBtn.addEventListener("click", () => {
-      signOut(auth);
-    });
-
-    function mostrarCitas() {
-      const tabla = document.getElementById("tablaCitas").getElementsByTagName("tbody")[0];
-      const filtro = document.getElementById("filtroHorario");
-      const q = query(collection(db, "citas"));
-
-      onSnapshot(q, (snapshot) => {
-        tabla.innerHTML = "";
-        const filtroValor = filtro.value;
-
-        snapshot.forEach(doc => {
-          const data = doc.data();
-          const hora = data.fechaHora?.split("T")[1];
-          if (filtroValor === "" || hora === filtroValor) {
-            const fila = tabla.insertRow();
-            fila.insertCell(0).innerText = data.transportadora || "";
-            fila.insertCell(1).innerText = data.placa || "";
-            fila.insertCell(2).innerText = data.conductor || "";
-            fila.insertCell(3).innerText = hora || "";
-            fila.insertCell(4).innerText = data.tipoOperacion || "";
-          }
-        });
+    window.exportarExcel = function() {
+      const wsData = [
+        ["Nombre", "Fecha", "Franja", "Hora", "Placa", "Transportadora", "Conductor"]
+      ];
+      todasLasCitas.forEach(cita => {
+        wsData.push([
+          cita.nombre,
+          cita.fecha,
+          cita.franja,
+          cita.hora,
+          cita.placa,
+          cita.transportadora,
+          cita.conductor
+        ]);
       });
 
-      filtro.addEventListener("change", mostrarCitas);
+      const wb = XLSX.utils.book_new();
+      const ws = XLSX.utils.aoa_to_sheet(wsData);
+      XLSX.utils.book_append_sheet(wb, ws, "Citas");
+      XLSX.writeFile(wb, "citas.xlsx");
     }
 
-    function generarFranjas() {
-      const select = document.getElementById("filtroHorario");
-      const inicio = 8 * 60;
-      const fin = 17 * 60;
-      const intervalo = 20;
-
-      for (let min = inicio; min < fin; min += intervalo) {
-        const hInicio = String(Math.floor(min / 60)).padStart(2, "0") + ":" + String(min % 60).padStart(2, "0");
-        const hFin = String(Math.floor((min + intervalo) / 60)).padStart(2, "0") + ":" + String((min + intervalo) % 60).padStart(2, "0");
-
-        const opt = document.createElement("option");
-        opt.value = hInicio;
-        opt.textContent = `${hInicio} - ${hFin}`;
-        select.appendChild(opt);
-      }
+    window.filtrarPorFecha = function() {
+      const fechaSeleccionada = document.getElementById("fechaFiltro").value;
+      if (!fechaSeleccionada) return mostrarCitas(todasLasCitas);
+      const filtradas = todasLasCitas.filter(c => c.fecha === fechaSeleccionada);
+      mostrarCitas(filtradas);
     }
 
-    generarFranjas();
-
-    onAuthStateChanged(auth, user => {
-      if (user) {
-        document.getElementById("loginSection").style.display = "none";
-        document.getElementById("panel").style.display = "block";
-        mostrarCitas();
-      } else {
-        document.getElementById("loginSection").style.display = "block";
-        document.getElementById("panel").style.display = "none";
-      }
-    });
+    cargarCitas();
   </script>
 </body>
 </html>
