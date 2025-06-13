@@ -1,35 +1,44 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Panel de Administración</title>
+  <meta charset="UTF-8">
+  <title>Agendamiento de Citas</title>
 </head>
 <body>
-  <h2>Ingreso Administrador</h2>
+  <h1>📅 Agendamiento de Citas</h1>
 
-  <div>
-    <label for="correo">Correo:</label>
-    <input type="email" id="correo" />
-    <br />
-    <label for="contrasena">Contraseña:</label>
-    <input type="password" id="contrasena" />
-    <br />
-    <button id="btnLogin">Ingresar</button>
-  </div>
+  <form id="formulario">
+    <label>Transportadora:</label><br>
+    <input type="text" id="transportadora" required><br>
 
-  <div id="datos" style="display:none;">
-    <h3>Citas agendadas:</h3>
-    <ul id="lista-citas"></ul>
-  </div>
+    <label>Placa:</label><br>
+    <input type="text" id="placa" required><br>
+
+    <label>Conductor:</label><br>
+    <input type="text" id="conductor" required><br>
+
+    <label>Fecha y hora:</label><br>
+    <input type="datetime-local" id="fechaHora" required><br>
+
+    <label>Tipo de operación:</label><br>
+    <select id="tipoOperacion" required>
+      <option value="">--Selecciona--</option>
+      <option value="Cargue">Cargue</option>
+      <option value="Descargue">Descargue</option>
+    </select><br><br>
+
+    <button type="submit">Agendar</button>
+  </form>
+
+  <p id="mensaje"></p>
 
   <hr>
-  <p>🔐 <a href="admin.html">Login interno (solo personal autorizado)</a></p>  
+  <p>🔐 <a href="admin.html">Login interno (solo personal autorizado)</a></p>
 
+  <!-- Firebase SDK -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-    import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-    import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+    import { getFirestore, collection, addDoc, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyAGpefaI4KKoUzKbmAUp_QHH1QCJJon6Dg",
@@ -42,47 +51,44 @@
     };
 
     const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
     const db = getFirestore(app);
 
-    function login() {
-      const email = document.getElementById("correo").value;
-      const password = document.getElementById("contrasena").value;
+    document.getElementById("formulario").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const transportadora = document.getElementById("transportadora").value;
+      const placa = document.getElementById("placa").value;
+      const conductor = document.getElementById("conductor").value;
+      const fechaHora = document.getElementById("fechaHora").value;
+      const tipoOperacion = document.getElementById("tipoOperacion").value;
 
-      signInWithEmailAndPassword(auth, email, password)
-        .then(() => {
-          alert("Acceso concedido");
-          mostrarCitas();
-        })
-        .catch((error) => {
-          alert("Error al ingresar: " + error.message);
-          console.error(error);
+      const hora = fechaHora.split("T")[1];
+
+      // Verificar si ya hay una cita en esa franja
+      const q = query(collection(db, "citas"), where("fechaHora", "==", fechaHora));
+      const snapshot = await getDocs(q);
+
+      if (!snapshot.empty) {
+        document.getElementById("mensaje").textContent = "⛔ Lo sentimos, esa franja ya está ocupada.";
+        return;
+      }
+
+      try {
+        await addDoc(collection(db, "citas"), {
+          transportadora,
+          placa,
+          conductor,
+          fechaHora,
+          tipoOperacion
         });
-    }
-
-    function mostrarCitas() {
-      document.getElementById("datos").style.display = "block";
-      const lista = document.getElementById("lista-citas");
-      lista.innerHTML = "";
-
-      const citasRef = collection(db, "citas");
-
-      getDocs(citasRef).then(snapshot => {
-        snapshot.forEach(doc => {
-          const data = doc.data();
-          const li = document.createElement("li");
-          li.textContent = `Nombre: ${data.nombre} - Fecha: ${data.fecha} - Hora: ${data.hora}`;
-          lista.appendChild(li);
-        });
-      });
-    }
-
-    document.addEventListener("DOMContentLoaded", () => {
-      document.getElementById("btnLogin").addEventListener("click", login);
+        document.getElementById("mensaje").textContent = "✅ Cita agendada con éxito.";
+        document.getElementById("formulario").reset();
+      } catch (e) {
+        document.getElementById("mensaje").textContent = "⛔ Error al guardar la cita.";
+        console.error(e);
+      }
     });
   </script>
-  <hr>
-  <p>🔐 <a href="admin.html">Login interno (solo personal autorizado)</a></p>  
 </body>
 </html>
+
 
