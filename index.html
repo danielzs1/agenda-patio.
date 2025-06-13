@@ -1,12 +1,60 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>📖Agendamiento de Cita Depot Tocancipa</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Agendamiento de Citas</title>
+  <style>
+    body { font-family: Arial; padding: 20px; }
+    input, select, button { padding: 8px; margin: 5px; width: 100%; max-width: 300px; display: block; }
+    #mensajeExito { color: green; margin-top: 10px; display: none; }
+  </style>
+</head>
+<body>
+
+  <!-- MODAL DE NORMAS -->
+  <div id="modalNormas" style="
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.8); display: flex; align-items: center; justify-content: center; z-index: 1000;
+  ">
+    <div style="background: white; padding: 20px; text-align: center; border-radius: 8px;">
+      <img src="images/WhatsApp Image 2025-06-12 at 9.26.04 PM.jpeg" alt="Normas" style="width: 400px; height: 500px;;" />
+      <br><br>
+      <button onclick="aceptarNormas()" style="margin: 0 auto; display: block; background-color: #0099da; color: white; border: none; border-radius: 4px; padding: 10px; font-weight: bold;">He leído y acepto</button>
+    </div>
+  </div>
+
+  <!-- FORMULARIO -->
+  <div id="formularioCitas" style="display: none;">
+    <img src="data:image/png;base64,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" alt= "logo Maersk">
+    <h2>Agendamiento de Citas Depot Tocancipa</h2>
+    <input type="text" id="transportadora" placeholder="Transportadora" required />
+    <input type="text" id="conductor" placeholder="Nombre del Conductor" required />
+    <input type="text" id="placa" placeholder="Placa" required />
+    <input type="date" id="fecha" required />
+    <select id="franja">
+      <option value="">Selecciona una franja</option>
+      <option value="8:00 a 8:20">8:00 a 8:20</option>
+      <option value="8:20 a 8:40">8:20 a 8:40</option>
+      <option value="8:40 a 9:00">8:40 a 9:00</option>
+      <option value="8:40 a 9:00">9:00 a 9:20</option>
+      <option value="8:40 a 9:00">9:20 a 9:40</option>
+      <option value="8:40 a 9:00">8:40 a 10:00</option>
+      <option value="8:40 a 9:00">10:00 a 10:20</option>
+      <option value="8:40 a 9:00">10:20 a 10:40</option>
+      <option value="8:40 a 9:00">10:40 a 11:00</option>
+      <option value="8:40 a 9:00">11:00 a 11:20</option>
+      <option value="8:40 a 9:00">11:20 a 11:40</option>
+      <option value="8:40 a 9:00">11:40 a 12:00</option>
+    </select>
+    <button onclick="agendarCita()" style="background-color: #0099da; color: white; border: none; border-radius: 4px;">Agendar</button>
+    <p id="mensajeExito">✅ Cita agendada con éxito</p>
+  </div>
+
+  <!-- FIREBASE -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-    import { getFirestore, collection, addDoc, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+    import { getFirestore, collection, query, where, getDocs, addDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyAGpefaI4KKoUzKbmAUp_QHH1QCJJon6Dg",
@@ -21,24 +69,24 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    window.agendarCita = async function () {
-      const transportadora = document.getElementById("transportadora").value;
-      const conductor = document.getElementById("conductor").value;
-      const placa = document.getElementById("placa").value;
+    window.agendarCita = async () => {
+      const transportadora = document.getElementById("transportadora").value.trim();
+      const conductor = document.getElementById("conductor").value.trim();
+      const placa = document.getElementById("placa").value.trim();
       const fecha = document.getElementById("fecha").value;
-      const franjaHoraria = document.getElementById("franja").value;
+      const franja = document.getElementById("franja").value;
 
-      if (!transportadora || !conductor || !placa || !fecha || !franjaHoraria) {
+      if (!transportadora || !conductor || !placa || !fecha || !franja) {
         alert("Por favor completa todos los campos.");
         return;
       }
 
       const citasRef = collection(db, "citas");
-      const q = query(citasRef, where("fecha", "==", fecha), where("franjaHoraria", "==", franjaHoraria));
-      const querySnapshot = await getDocs(q);
+      const q = query(citasRef, where("fecha", "==", fecha), where("franjaHoraria", "==", franja));
+      const snapshot = await getDocs(q);
 
-      if (!querySnapshot.empty) {
-        alert("Ya hay una cita agendada para esa fecha y franja horaria. Elige otra.");
+      if (!snapshot.empty) {
+        alert("⚠️ Ya hay una cita registrada en esta fecha y franja horaria.");
         return;
       }
 
@@ -47,56 +95,35 @@
         conductor,
         placa,
         fecha,
-        franjaHoraria
+        franjaHoraria: franja
       });
 
-      const mensaje = document.getElementById("mensaje");
-      mensaje.innerText = "Cita agendada correctamente.";
-      setTimeout(() => mensaje.innerText = "", 2500);
+      mostrarMensaje();
+      limpiarFormulario();
+    };
 
-      document.getElementById("form-cita").reset();
+    function mostrarMensaje() {
+      const mensaje = document.getElementById("mensajeExito");
+      mensaje.style.display = "block";
+      setTimeout(() => mensaje.style.display = "none", 3000);
     }
+
+    function limpiarFormulario() {
+      document.getElementById("transportadora").value = "";
+      document.getElementById("conductor").value = "";
+      document.getElementById("placa").value = "";
+      document.getElementById("fecha").value = "";
+      document.getElementById("franja").value = "";
+    }
+
+    window.aceptarNormas = () => {
+      document.getElementById("modalNormas").style.display = "none";
+      document.getElementById("formularioCitas").style.display = "block";
+    };
   </script>
-  <style>
-    body { font-family: Arial, sans-serif; padding: 20px; }
-    label { display: block; margin-top: 10px; }
-    input, select { width: 100%; padding: 8px; margin-top: 5px; }
-    button { margin-top: 15px; padding: 10px; width: 100%; background: #2a9d8f; color: white; border: none; cursor: pointer; }
-    #mensaje { margin-top: 10px; color: green; font-weight: bold; }
-  </style>
-</head>
-<body>
-  <img src="data:image/png;base64,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" alt= "logo Maersk">
-  <h2>Agendamiento de Citas Depot Tocancipa </h2>
-  <form id="form-cita" onsubmit="event.preventDefault(); agendarCita();">
-    <label>Transportadora</label>
-    <input type="text" id="transportadora">
-
-    <label>Conductor</label>
-    <input type="text" id="conductor">
-
-    <label>Placa</label>
-    <input type="text" id="placa">
-
-    <label>Fecha</label>
-    <input type="date" id="fecha">
-
-    <label>Franja Horaria</label>
-    <select id="franja">
-      <option value="8:00 a 8:20">8:00 a 8:20</option>
-      <option value="8:20 a 8:40">8:20 a 8:40</option>
-      <option value="8:40 a 9:00">8:40 a 9:00</option>
-    </select>
-
-    <button type="submit">Agendar</button>
-    <div id="mensaje"></div>
-  </form>
-
 <hr>
 <p>🔐 <a href="admin.html">Login interno (solo personal autorizado)</a></p>
-
 </body>
 </html>
-
 
 
