@@ -5,9 +5,9 @@
   <title>Agendamiento de Citas</title>
 </head>
 <body>
-  <h1>📅 Agendamiento de Citas</h1>
+  <h1>📆 Agendamiento de citas</h1>
 
-  <form id="formulario">
+  <form id="formCita">
     <label>Transportadora:</label><br>
     <input type="text" id="transportadora" required><br>
 
@@ -22,23 +22,18 @@
 
     <label>Tipo de operación:</label><br>
     <select id="tipoOperacion" required>
-      <option value="">--Selecciona--</option>
-      <option value="Cargue">Cargue</option>
-      <option value="Descargue">Descargue</option>
+      <option value="Carga">Carga</option>
+      <option value="Descarga">Descarga</option>
     </select><br><br>
 
-    <button type="submit">Agendar</button>
+    <button type="submit">Agendar cita</button>
   </form>
 
   <p id="mensaje"></p>
 
-  <hr>
-  <p>🔐 <a href="admin.html">Login interno (solo personal autorizado)</a></p>
-
-  <!-- Firebase SDK -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-    import { getFirestore, collection, addDoc, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+    import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyAGpefaI4KKoUzKbmAUp_QHH1QCJJon6Dg",
@@ -53,24 +48,17 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    document.getElementById("formulario").addEventListener("submit", async (e) => {
+    const form = document.getElementById("formCita");
+    const mensaje = document.getElementById("mensaje");
+
+    form.addEventListener("submit", async (e) => {
       e.preventDefault();
+
       const transportadora = document.getElementById("transportadora").value;
       const placa = document.getElementById("placa").value;
       const conductor = document.getElementById("conductor").value;
       const fechaHora = document.getElementById("fechaHora").value;
       const tipoOperacion = document.getElementById("tipoOperacion").value;
-
-      const hora = fechaHora.split("T")[1];
-
-      // Verificar si ya hay una cita en esa franja
-      const q = query(collection(db, "citas"), where("fechaHora", "==", fechaHora));
-      const snapshot = await getDocs(q);
-
-      if (!snapshot.empty) {
-        document.getElementById("mensaje").textContent = "⛔ Lo sentimos, esa franja ya está ocupada.";
-        return;
-      }
 
       try {
         await addDoc(collection(db, "citas"), {
@@ -80,15 +68,20 @@
           fechaHora,
           tipoOperacion
         });
-        document.getElementById("mensaje").textContent = "✅ Cita agendada con éxito.";
-        document.getElementById("formulario").reset();
-      } catch (e) {
-        document.getElementById("mensaje").textContent = "⛔ Error al guardar la cita.";
-        console.error(e);
+        mensaje.innerText = "✅ Cita agendada con éxito";
+        form.reset();
+      } catch (error) {
+        console.error("Error al guardar la cita:", error);
+        mensaje.innerText = "⛔ Error al guardar la cita";
       }
     });
   </script>
+
+<hr>
+<p>🔐 <a href="admin.html">Login interno (solo personal autorizado)</a></p>
+
 </body>
 </html>
+
 
 
