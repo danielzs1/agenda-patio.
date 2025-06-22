@@ -103,7 +103,7 @@ nav a:hover{
 
 /* Contenedor con fondo */
 .formulario-container {
-  background: url('/images/maersk-se-une-a-la-base-de-datos-boxtech.jpeg') no-repeat center center;
+  background: url('images/contenedor.jpeg') no-repeat center center;
   background-size: cover;
   min-height: 100vh;
   padding-top: 80px;
