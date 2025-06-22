@@ -1,0 +1,180 @@
+html, body {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+
+}
+
+body {
+  font-family: Arial; /* Type of Font*/
+  margin: 0;
+}
+input, select, button {
+  padding: 8px;
+  margin-top: 8px;
+  margin-right: 8px;
+  display: block;
+}
+#successMessage {
+  color:  #0099da;
+  margin-top: 3px;   
+  display: flex; /* 🔑 Key to aling in horizontally  */
+  align-items: center;
+}
+
+.icon-azul{
+  color: #0099da; 
+  font-size: 30px;
+}
+
+#aboutUs .about-content {
+  display: flex; 
+  align-items: center;
+  max-width: 100%;
+  flex-wrap: wrap;  /* importante para evitar desbordes en pantallas pequeñas */
+}
+
+#aboutUs img {
+  max-width: 100%;
+  height: 200px;
+}
+
+#aboutUs p {
+  flex: 1;
+  margin-right: 20px;
+  text-align: justify;
+
+}
+
+header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 60px;
+  width: 100%;
+  background-color: rgba(255, 251, 251, 0.973); /* azul inicial */
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+  z-index: 100;
+  transition: background-color 0.4s ease;
+}
+header.scrolled {
+  background-color: white;
+}
+
+.logo{
+  display: flex;
+  align-items: center;
+}
+#logo img{
+  height: 40px;
+  margin-left: 10px;
+} 
+
+a{
+  text-decoration: none;
+  color: black;
+}
+
+nav a {
+  margin-right: 30px;
+  color: black;
+  padding: 8px;
+  text-decoration: none;
+  font-weight: bold;
+}
+
+nav a:hover{
+  color:  white;
+}
+
+@media (max-width:700px){
+  header{
+    flex-direction: column;
+  }
+  nav{
+    padding: 10px 0px;
+  }
+}
+
+/* Contenedor con fondo */
+.formulario-container {
+  background: url('/images/maersk-se-une-a-la-base-de-datos-boxtech.jpeg') no-repeat center center;
+  background-size: cover;
+  min-height: 100vh;
+  padding-top: 80px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Formulario */
+#formularioCitas {
+  background-color: rgba(255, 255, 255, 0.712);
+  padding: 40px;
+  border-radius: 12px;
+  max-width: 500px;
+  width: 100%;
+  box-shadow: 0 0 15px rgba(0,0,0,0.2);
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+
+
+/* 🔵 ELEMENTOS DEL FORMULARIO */
+#formularioCitas h2 {
+  margin-bottom: 20px;
+  color: #0099da;
+  text-align: center;
+
+}
+
+#formularioCitas input,
+#formularioCitas select,
+#formularioCitas button {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 15px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  font-size: 14px;
+}
+
+#formularioCitas button {
+  background-color: #0099da;
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+#formularioCitas button:hover {
+  background-color: #007bb3;
+}
+
+/* ✅ MENSAJE DE ÉXITO */
+#successMessage,
+#errorMessage {
+  color: #0099da;
+  display: none;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+  font-size: 14px;
+}
+
+.icon-azul {
+  font-size: 20px;
+  color: #0099da;
+}
+.icon-roja {
+  font-size: 20px;
+  color: red;
+
+}
