@@ -89,7 +89,7 @@ nav a {
 }
 
 nav a:hover{
-  color:  white;
+  color:  rgb(38, 104, 247);
 }
 
 @media (max-width:700px){
