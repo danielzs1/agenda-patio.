@@ -29,19 +29,19 @@ input, select, button {
   font-size: 30px;
 }
 
-#aboutUs .about-content {
+#almacenamiento .about-content {
   display: flex; 
   align-items: center;
   max-width: 100%;
   flex-wrap: wrap;  /* importante para evitar desbordes en pantallas pequeñas */
 }
 
-#aboutUs img {
+#almacenamiento img {
   max-width: 100%;
   height: 200px;
 }
 
-#aboutUs p {
+#almacenamiento p {
   flex: 1;
   margin-right: 20px;
   text-align: justify;
@@ -177,4 +177,67 @@ nav a:hover{
   font-size: 20px;
   color: red;
 
+}
+
+.servicios-container {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 20px;
+  align-items: stretch; /* Esto hace que todos los bloques tengan la misma altura */
+}
+
+.servicio {
+  flex: 1;
+  background-color: #ffffff;
+  border: 1px solid #ddd;
+  padding: 20px;
+  border-radius: 12px;
+  box-sizing: border-box;
+  text-align: justify;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  font-family: 'Arial', sans-serif;
+  box-shadow: 0 0 0 transparent;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+}
+
+.servicio img {
+  width: 100%;
+  height: 180px;
+  object-fit: contain; /* o 'cover' según tu preferencia */
+  border-radius: 8px;
+  margin-bottom: 15px;
+}
+
+.servicio:hover {
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+  transform: scale(1.03);
+  z-index: 2;
+}
+
+.servicio h1 {
+  font-size: 20px;
+  margin-bottom: 10px;
+  color: #333;
+  text-align: center;
+}
+
+.servicio p {
+  font-size: 14px;
+  color: #555;
+  line-height: 1.6;
+  flex-grow: 1; /* hace que todos los párrafos llenen el mismo espacio */
+}
+
+.nuestros-servicios {
+  font-size: 32px;
+  color: #0099da;
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin-top: 40px;
+  margin-bottom: 30px;
+  padding-bottom: 10px;
 }
