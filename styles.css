@@ -1,60 +1,37 @@
+/* Estilos generales */
 html, body {
   width: 100%;
   height: 100%;
   margin: 0;
   padding: 0;
   overflow-x: hidden;
-
+  font-family: Arial, sans-serif;
 }
 
-body {
-  font-family: Arial; /* Type of Font*/
-  margin: 0;
+/* Enlaces */
+a {
+  text-decoration: none;
+  color: black;
 }
-input, select, button {
+
+nav a {
+  margin-right: 30px;
   padding: 8px;
-  margin-top: 8px;
-  margin-right: 8px;
-  display: block;
-}
-#successMessage {
-  color:  #0099da;
-  margin-top: 3px;   
-  display: flex; /* 🔑 Key to aling in horizontally  */
-  align-items: center;
+  font-weight: bold;
 }
 
-.icon-azul{
-  color: #0099da; 
-  font-size: 30px;
+nav a:hover {
+  color: rgb(38, 104, 247);
 }
 
-#almacenamiento .about-content {
-  display: flex; 
-  align-items: center;
-  max-width: 100%;
-  flex-wrap: wrap;  /* importante para evitar desbordes en pantallas pequeñas */
-}
-
-#almacenamiento img {
-  max-width: 100%;
-  height: 200px;
-}
-
-#almacenamiento p {
-  flex: 1;
-  margin-right: 20px;
-  text-align: justify;
-
-}
-
+/* Header */
 header {
   position: fixed;
   top: 0;
   left: 0;
   height: 60px;
   width: 100%;
-  background-color: rgba(255, 251, 251, 0.973); /* azul inicial */
+  background-color: rgba(255, 251, 251, 0.973);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -62,44 +39,56 @@ header {
   z-index: 100;
   transition: background-color 0.4s ease;
 }
+
 header.scrolled {
   background-color: white;
 }
 
-.logo{
-  display: flex;
-  align-items: center;
-}
-#logo img{
+#logo img {
   height: 40px;
   margin-left: 10px;
-} 
-
-a{
-  text-decoration: none;
-  color: black;
 }
 
-nav a {
-  margin-right: 30px;
-  color: black;
-  padding: 8px;
-  text-decoration: none;
-  font-weight: bold;
+/* Modal de normas */
+#modalNormas {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
 }
 
-nav a:hover{
-  color:  rgb(38, 104, 247);
+#modalNormas div {
+  background: white;
+  padding: 20px;
+  text-align: center;
+  border-radius: 8px;
+  max-height: 90%;
+  overflow-y: auto;
 }
 
-@media (max-width: 768px) {
-  .servicios-container {
-    flex-direction: column;
-    padding: 10px;
-  }
+#modalNormas img {
+  width: 100%;
+  height: auto;
+  max-width: 400px;
 }
 
-/* Contenedor con fondo */
+#modalNormas button {
+  background-color: #0099da;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  margin: 0 auto;
+  padding: 10px 20px;
+  cursor: pointer;
+}
+
+/* Formulario con fondo */
 .formulario-container {
   background: url('images/contenedor.jpeg') no-repeat center center;
   background-size: cover;
@@ -112,7 +101,7 @@ nav a:hover{
 
 /* Formulario */
 #formularioCitas {
-  background-color: rgba(255, 255, 255, 0.712);
+  background-color: rgba(255, 255, 255, 0.9);
   padding: 40px;
   border-radius: 12px;
   max-width: 500px;
@@ -123,14 +112,10 @@ nav a:hover{
   gap: 15px;
 }
 
-
-
-/* 🔵 ELEMENTOS DEL FORMULARIO */
 #formularioCitas h2 {
   margin-bottom: 20px;
   color: #0099da;
   text-align: center;
-
 }
 
 #formularioCitas input,
@@ -156,25 +141,47 @@ nav a:hover{
   background-color: #007bb3;
 }
 
-/* ✅ MENSAJE DE ÉXITO */
+/* Mensajes */
 #successMessage,
 #errorMessage {
-  color: #0099da;
   display: none;
   align-items: center;
   gap: 8px;
-  margin-top: 10px;
   font-size: 14px;
+  margin-top: 10px;
+}
+
+#successMessage {
+  color: #0099da;
+}
+
+#errorMessage {
+  color: red;
+}
+
+.icon-azul,
+.icon-roja {
+  font-size: 20px;
 }
 
 .icon-azul {
-  font-size: 20px;
   color: #0099da;
 }
-.icon-roja {
-  font-size: 20px;
-  color: red;
 
+.icon-roja {
+  color: red;
+}
+
+/* Servicios */
+.nuestros-servicios {
+  font-size: 32px;
+  color: #0099da;
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin-top: 40px;
+  margin-bottom: 30px;
+  padding-bottom: 10px;
 }
 
 .servicios-container {
@@ -182,7 +189,8 @@ nav a:hover{
   justify-content: space-between;
   gap: 20px;
   padding: 20px;
-  align-items: stretch; /* Esto hace que todos los bloques tengan la misma altura */
+  align-items: stretch;
+  flex-wrap: wrap;
 }
 
 .servicio {
@@ -194,19 +202,9 @@ nav a:hover{
   box-sizing: border-box;
   text-align: justify;
   transition: transform 0.3s ease, box-shadow 0.3s ease;
-  font-family: 'Arial', sans-serif;
-  box-shadow: 0 0 0 transparent;
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
-}
-
-.servicio img {
-  width: 100%;
-  height: 180px;
-  object-fit: contain; /* o 'cover' según tu preferencia */
-  border-radius: 8px;
-  margin-bottom: 15px;
 }
 
 .servicio:hover {
@@ -222,23 +220,40 @@ nav a:hover{
   text-align: center;
 }
 
+.servicio img {
+  width: 100%;
+  height: 180px;
+  object-fit: contain;
+  border-radius: 8px;
+  margin-bottom: 15px;
+}
+
 .servicio p {
   font-size: 14px;
   color: #555;
   line-height: 1.6;
-  flex-grow: 1; /* hace que todos los párrafos llenen el mismo espacio */
+  flex-grow: 1;
 }
 
-.nuestros-servicios {
-  font-size: 32px;
-  color: #0099da;
-  text-align: center;
-  text-transform: uppercase;
-  letter-spacing: 2px;
-  margin-top: 40px;
-  margin-bottom: 30px;
-  padding-bottom: 10px;
+/* Sección especial almacenamiento */
+#almacenamiento .about-content {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
 }
+
+#almacenamiento img {
+  max-width: 100%;
+  height: 200px;
+}
+
+#almacenamiento p {
+  flex: 1;
+  margin-right: 20px;
+  text-align: justify;
+}
+
+/* Responsive */
 @media (max-width: 768px) {
   .servicios-container {
     flex-direction: column;
@@ -265,5 +280,42 @@ nav a:hover{
   #almacenamiento p {
     margin-right: 0;
     margin-top: 10px;
+  }
+}
+
+#menu-toggle {
+  display: none;
+  font-size: 36px;
+  cursor: pointer;
+  color: black;
+}
+
+/* Oculta menú por defecto en móviles */
+@media (max-width: 768px) {
+  nav {
+    display: none;
+    flex-direction: column;
+    position: absolute;
+    top: 60px;
+    right: 20px;
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    padding: 10px;
+    z-index: 999;
+  }
+
+  nav a {
+    margin: 10px 0;
+    color: black;
+    font-weight: bold;
+  }
+
+  nav.show {
+    display: flex;
+  }
+
+  #menu-toggle {
+    display: block;
   }
 }
