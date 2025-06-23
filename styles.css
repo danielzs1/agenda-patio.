@@ -92,12 +92,10 @@ nav a:hover{
   color:  rgb(38, 104, 247);
 }
 
-@media (max-width:700px){
-  header{
+@media (max-width: 768px) {
+  .servicios-container {
     flex-direction: column;
-  }
-  nav{
-    padding: 10px 0px;
+    padding: 10px;
   }
 }
 
@@ -240,4 +238,32 @@ nav a:hover{
   margin-top: 40px;
   margin-bottom: 30px;
   padding-bottom: 10px;
+}
+@media (max-width: 768px) {
+  .servicios-container {
+    flex-direction: column;
+    padding: 10px;
+  }
+
+  .servicio {
+    margin-bottom: 20px;
+  }
+
+  .servicio img {
+    height: auto;
+  }
+
+  .nuestros-servicios {
+    font-size: 24px;
+    margin-top: 20px;
+  }
+
+  #almacenamiento .about-content {
+    flex-direction: column;
+  }
+
+  #almacenamiento p {
+    margin-right: 0;
+    margin-top: 10px;
+  }
 }
