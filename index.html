@@ -1,200 +1,504 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" /> <!-- Caracteres -->
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/> <!--dispositivos moviles -->
-  <title>Agendamiento de Citas</title>  
-  <link rel="icon" type="image/x-icon" href="images/favicon.ico">
-  <link rel="stylesheet" href="styles.css"> <!--CSS -->
-  <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet"> <!--Vinculo de inconos -->
-
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Daniel Zabala</title>
+  <meta name="description" content="Asesoría, cursos y plantillas para profesionales técnicos. Implementación y auditoría de sistemas de gestión ISO, plantillas Notion y formación práctica." />
+  <meta name="author" content="Daniel Zabala" />
+  <link rel="icon" type="image/x-icon" href="Images/logo.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg:#f7fafc;
+      --card:#ffffff;
+      --muted:#6b7280;
+      --accent:#0ea5a0; /* teal */
+      --accent-2:#1696e0; /* indigo */
+      --radius:12px;
+      font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      background:var(--bg);
+      color:#171f32;
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+      line-height:1.45;
+    }
+    a{color:var(--accent-2); text-decoration:none}
+    header{background:linear-gradient(90deg, rgba(255,255,255,.95), rgba(255,255,255,.95)); backdrop-filter: blur(4px); position:sticky; top:0; z-index:40; border-bottom: 1px solid rgba(15,23,42,0.04)}
+    .container{max-width:1100px; margin:0 auto; padding:20px;}
+    .nav {display:flex; align-items:center; justify-content:space-between; gap:16px;}
+    .brand {display:flex; align-items:center; gap:12px}
+    .logo {width:48px; height:48px; border-radius:10px; display:inline-flex; align-items:center; justify-content:center; font-weight:700; color:white; background:linear-gradient(135deg,var(--accent-2),var(--accent));}
+    .navlinks{display:flex; gap:14px; align-items:center}
+    .navlinks a{font-size:14px; color: #0d121e}
+    .cta{padding:8px 12px; background:var(--accent-2); color:white; border-radius:8px; font-weight:600; font-size:14px}
+    /* hero */
+    .hero{display:grid; grid-template-columns:1fr 420px; gap:28px; align-items:center; padding:48px 0}
+    .hero h1{font-size:28px; margin:0; font-weight:800; line-height:1.05}
+    .hero p{color:var(--muted); margin-top:12px}
+    .buttons{margin-top:18px; display:flex; gap:10px; flex-wrap:wrap}
+    .btn-outline{padding:10px 14px;border-radius:10px;border:1px solid rgba(15,23,42,0.06); background:white}
+    .card{background:var(--card); border-radius:12px; padding:18px; box-shadow: 0 6px 18px rgba(2,6,23,0.06)}
+    /* grid sections */
+    .grid-3{display:grid; grid-template-columns:repeat(3,1fr); gap:16px}
+    .grid-2{display:grid; grid-template-columns:repeat(2,1fr); gap:16px}
+    .section{padding:36px 0}
+    h2.section-title{font-size:20px; margin:0 0 10px 0; font-weight:700}
+    p.lead{color:var(--muted); margin:0 0 18px 0}
+    /* shop product */
+    .product{border-radius:10px; overflow:hidden; display:flex; flex-direction:column; gap:10px}
+    .product .thumb{height:180px; background-size:cover; background-position:center}
+    .product .info{padding:12px}
+    .product .price{font-weight:700}
+    .small{font-size:13px; color:var(--muted)}
+    /* blog */
+    .article{padding:16px; border-radius:10px; background:var(--card)}
+    /* testimonials */
+    .testi{padding:16px; border-radius:10px; background:linear-gradient(180deg,rgba(79,70,229,0.04),rgba(14,165,160,0.02));}
+    /* contact */
+    form .row{display:flex; gap:12px}
+    input, textarea{width:100%; padding:10px 12px; border-radius:8px; border:1px solid rgba(15,23,42,0.06); font-size:14px}
+    textarea{min-height:120px; resize:vertical}
+    .muted{color:var(--muted); font-size:14px}
+    footer{padding:28px 0; color:var(--muted)}
+    .whatsapp{position:fixed; right:18px; bottom:18px; background:#25D366; color:white; padding:12px 14px; border-radius:999px; font-weight:700; box-shadow:0 10px 30px rgba(2,6,23,0.12); z-index:50}
+    /* responsive */
+    @media (max-width:1000px){
+      .hero{grid-template-columns:1fr; padding:32px 0}
+      .grid-3{grid-template-columns:repeat(2,1fr)}
+    }
+    @media (max-width:720px){
+      .navlinks{display:none}
+      .grid-3{grid-template-columns:1fr}
+      .grid-2{grid-template-columns:1fr}
+      .logo{width:40px;height:40px}
+      .hero h1{font-size:22px}
+    }
+    /* subtle utilities */
+    .badge{display:inline-block; padding:6px 10px; border-radius:999px; background:rgba(79,70,229,0.08); color:var(--accent-2); font-weight:700; font-size:12px}
+    .price-tag{background:rgba(14,165,160,0.08); color:var(--accent); padding:6px 8px;border-radius:8px; font-weight:700}
+    .muted-2{color:#94a3b8; font-size:13px}
+    .mini{font-size:13px}
+  </style>
 </head>
 <body>
-<header>
-  <div id="logo">
-    <img src="images/Logo-maersk.png" alt="logo Maersk">
-  </div>
-  <nav id="nav">
-    <a href="conalca.html">Conalca</a>
-    <a href="admin.html">Maersk</a>
-    <a href="contact.asp">Contact</a>
-    <a href="about.asp">About</a>
-  </nav>
-  <div id="menu-toggle" onclick="toggleMenu()">
-    <i class="bx bx-menu"></i>
-  </div>
-</header>
+  <header>
+    <div class="container nav" role="navigation" aria-label="Principal">
+      <div class="brand">
+        <div class="logo" style="background-image:url('Images/logo.png'); background-size:cover; background-position:center;"></div>
 
+        <div>
+          <div style="font-weight:800">Daniel Zabala</div>
+        </div>
+      </div>
 
-  <!-- MODAL DE NORMAS -->
-  <div id="modalNormas" style="
-  position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-  background: rgba(0,0,0,0.8); display: flex; align-items: center; justify-content: center; z-index: 1000;
-">
-  <div style="
-    background: white; padding: 20px; text-align: center; border-radius: 8px;
-    max-height: 90%; overflow-y: auto;
-  ">
-    <img src="images/WhatsApp Image 2025-06-12 at 9.26.04 PM.jpeg" alt="Normas" style="width: 100%; height: auto; max-width: 400px;" />
-    <br><br>
-    <button onclick="aceptarNormas()" style="background-color: #0099da; color: white; border: none; border-radius: 4px; margin: 0 auto; display: block">He leído y acepto</button>
-  </div>
-</div>
+      <nav class="navlinks" aria-label="Enlaces principales">
+        <a href="#servicios">Servicios</a>
+        <a href="#tienda">Tienda</a>
+        <a href="#blog">Blog</a>
+        <a href="#contacto" class="cta">Contacto</a>
+      </nav>
+    </div>
+  </header>
 
-  <!-- ENVOLTORIO CON FONDO -->
-  <div class="formulario-container" id="formularioWrapper">
-    <div id="formularioCitas">
-      <h2>Agendamiento de Citas Depot Tocancipa</h2>
-      <input type="text" id="transportadora" placeholder="Transportadora" required />
-      <input type="text" id="conductor" placeholder="Nombre del Conductor" required />
-      <input type="text" id="placa" placeholder="Placa" required />
-      <input type="date" id="fecha" required />
-      <select id="franja">
-        <option value="">Selecciona una franja</option>
-        <option value="8:00 a 8:20">8:00 a 8:20</option>
-        <option value="8:20 a 8:40">8:20 a 8:40</option>
-        <option value="8:40 a 9:00">8:40 a 9:00</option>
-        <option value="9:00 a 9:20">9:00 a 9:20</option>
-        <option value="9:20 a 9:40">9:20 a 9:40</option>
-        <option value="9:40 a 10:00">9:40 a 10:00</option>
-        <option value="10:00 a 10:20">10:00 a 10:20</option>
-        <option value="10:20 a 10:40">10:20 a 10:40</option>
-        <option value="10:40 a 11:00">10:40 a 11:00</option>
-        <option value="11:00 a 11:20">11:00 a 11:20</option>
-        <option value="11:20 a 11:40">11:20 a 11:40</option>
-        <option value="11:40 a 12:00">11:40 a 12:00</option>
-      </select>
-      <button onclick="agendarCita()">Agendar</button>
-      <p id="successMessage" style="display: none;">
-       <i class='bx bxs-checkbox-checked icon-azul'></i>
-       Cita agendada con éxito
-      </p>
-      <p id="errorMessage" style="display: none; color: red;">
-       <i class='bx bxs-error-circle icon-roja'></i>
-        Ya hay una cita registrada en esa fecha y franja.
-      </p>
+  <main class="container">
+    <!-- HERO -->
+    <section class="hero section" id="home">
+      <div>
+        <span class="badge">SIG · ISO · Productividad</span>
+        <h1>Ayudo a profesionales y empresas a organizar la  gestión de su sistema integrado de gestion (SIG) y optimizar sus procesos.</h1>
+        <p class="lead">Servicios de consultoria, cursos prácticos y asesoría técnica para implementación y auditoría de sistemas integrados de gestión (ISO 9001, 14001, 45001, LA/FT/FPADM ) y requerimientos legales.</p>
+        <div class="buttons">
+          <a class="cta" href="#tienda">Ver servicios</a>
+          <a class="btn-outline" href="#contacto">Solicitar cotización</a>
+        </div>
+      </div>
+
+      <aside class="card">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <div>
+            <div style="font-weight:700">Mis Servicios</div>
+            <div class="muted small">Selecciona los servicios que te interesen para recibir una cotización</div>
+          </div>
+          <div class="price-tag" id="cart-count">0</div>
+        </div>
+
+        <div id="cart-list" style="margin-top:12px">
+          <div class="muted">Tu carrito está vacío.</div>
+        </div>
+
+        <div style="margin-top:14px; display:flex; gap:8px;">
+          <button id="clear-cart" style="padding:8px 10px; border-radius:8px; border:1px solid rgba(15,23,42,0.06); background:white">Limpiar</button>
+          <a href="#contacto" class="cta" id="checkout">Enviar solicitud</a>
+        </div>
+      </aside>
+    </section>
+
+    <!-- ABOUT -->
+    <section id="sobre" class="section">
+      <h2 class="section-title">Sobre mí</h2>
+      <p class="lead">Soy Ingeniero Industrial, especialista en Seguridad y Salud en el Trabajo, bilingüe (español-inglés), estudiante de Derecho y portugués. Cuento con experiencia en empresas nacionales y multinacionales, donde he combinado conocimientos técnicos y legales con herramientas digitales para fortalecer la productividad, el cumplimiento normativo y la mejora continua.</p>
+
+      <div class="grid-3" style="margin-top:16px">
+        <div class="card">
+          <div style="font-weight:700">Consultoría SST</div>
+          <div class="small muted" style="margin-top:8px">Diagnóstico, planes de acción, implementación, soporte para sistemas de gestión, evaluacion y reporte de estandares minimos antes ARL y ministerio del trabajo </div>
+        </div>
+        <div class="card">
+          <div style="font-weight:700">Formación y capacitación</div>
+          <div class="small muted" style="margin-top:8px">Cursos prácticos: Excel aplicado, Notion enfoque en productividad y gestion de proyectos, inglés conversacional.</div>
+        </div>
+        <div class="card">
+          <div style="font-weight:700">Plantillas y productos digitales</div>
+          <div class="small muted" style="margin-top:8px">Plantillas Notion, Hojas Excel, aplicativos a base de macros, dashboards, matrices de riesgo, plantillas  y guías listas para usar.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SERVICES -->
+    <section id="servicios" class="section">
+      <h2 class="section-title">Servicios destacados</h2>
+      <p class="lead">Servicios enfocados a organizaciones y profesionales que requieren cumplimiento y eficiencia operativa.</p>
+
+      <div class="grid-3" style="margin-top:14px">
+        <div class="card">
+          <div style="font-weight:700">Implementación Sistemas Integrados (ISO)</div>
+          <div class="small muted" style="margin-top:8px">Diseño e implementación ISO 9001 (calidad), ISO 14001 (ambiental), ISO 45001 (SST).</div>
+          <div style="margin-top:10px">
+            <button class="add-btn" data-id="svc1" data-title="Asesoría ISO 9001/14001/45001" data-price="150">Agregar</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div style="font-weight:700">Auditoría interna integral</div>
+          <div class="small muted" style="margin-top:8px">Ejecución de auditorías internas y acompañamiento en planes de mejora.</div>
+          <div style="margin-top:10px">
+            <button class="add-btn" data-id="svc2" data-title="Auditoría Interna Integral" data-price="120">Agregar</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div style="font-weight:700">Capacitación y formación</div>
+          <div class="small muted" style="margin-top:8px">Cursos a medida para equipos operativos y administrativos.</div>
+          <div style="margin-top:10px">
+            <button class="add-btn" data-id="svc3" data-title="Capacitación y Formación" data-price="80">Agregar</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SHOP / PRODUCTS -->
+    <section id="tienda" class="section">
+      <h2 class="section-title">Productos digitales</h2>
+      <p class="lead">Material listo para descargar y adaptar a tus procesos.</p>
+
+      <div class="grid-3" style="margin-top:14px">
+        <div class="product card">
+          <div class="thumb" style="background-image: url('Images/dashboard.jpg');"></div>
+          <div class="info">
+            <div style="font-weight:700"> Sistema SIG Pro</div>
+            <div class="small muted" style="margin-top:8px">Dashboard , plantilla de reportes, inspecciones, acciones correctivas y KPI.</div>
+            <div style="margin-top:10px; display:flex; justify-content:space-between; align-items:center;">
+              <div class="price-tag"></div>
+              <button class="add-btn" data-id="p1" data-title="Plantilla Notion - Sistema SST Pro" data-price="29">Agregar</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="product card">
+          <div class="thumb" style="background-image:url('Images/class.jpg');"></div>
+          <div class="info">
+            <div style="font-weight:700">Curso Express: Excel para Técnicos</div>
+            <div class="small muted" style="margin-top:8px">PDF + videos con plantillas aplicadas a reportes.</div>
+            <div style="margin-top:10px; display:flex; justify-content:space-between; align-items:center;">
+              <div class="price-tag"><!--$39</div>--></div>
+              <button class="add-btn" data-id="p2" data-title="Curso Express: Excel para Técnicos" data-price="39">Agregar</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="product card">
+          <div class="thumb" style="background-image:url('Images/consultoria.jpg');"></div>
+          <div class="info">
+            <div style="font-weight:700"> Consultoría en SIG "Sistemas integrados de gestion" - cumplimiento)</div>
+            <div class="small muted" style="margin-top:8px">Asesorias presenciales y virtuales, diagnositico, implementacion de sistemas de calidad, seguridad y salud en el trabajo, medioambiente, lavado de activos personalizado para tu proyecto.</div>
+            <div style="margin-top:10px; display:flex; justify-content:space-between; align-items:center;">
+              <div class="price-tag"></div>
+              <button class="add-btn" data-id="p3" data-title="Sesión de consultoría 1h" data-price="">Agregar</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- BLOG -->
+    <section id="blog" class="section">
+      <h2 class="section-title">Blog / Recursos</h2>
+      <p class="lead">Guías prácticas y casos aplicados.</p>
+
+      <div class="grid-2" style="margin-top:12px">
+        <article class="article">
+          <div style="font-weight:700">Cómo usar Notion para seguimiento de inspecciones</div>
+          <div class="small muted" style="margin-top:8px">Guía paso a paso para crear checklist y registrar evidencias.</div>
+          <a href="#" class="mini" style="margin-top:10px;display:inline-block">Leer →</a>
+        </article>
+
+        <article class="article">
+          <div style="font-weight:700">Plantilla Excel: reporte semanal de indicadores</div>
+          <div class="small muted" style="margin-top:8px">Ejemplo con fórmulas y gráfico listo para copiar.</div>
+          <a href="#" class="mini" style="margin-top:10px;display:inline-block">Leer →</a>
+        </article>
+      </div>
+    </section>
+
+    <!-- TESTIMONIOS -->
+    <section id="testimonios" class="section">
+      <h2 class="section-title">Clientes</h2>
+      <!-- <p class="muted small">Sección reservada: puedes sustituir o añadir testimonios reales aquí cuando los tengas.</p>-->
+
+      <div style="margin-top:12px; display:grid; grid-template-columns:repeat(2,1fr); gap:12px;">
+  <div class="testi card" 
+       style="padding:20px; background:#fff; border-radius:10px; 
+              box-shadow:0 3px 8px rgba(0,0,0,0.1); text-align:justify;">
+    
+    <!-- Encabezado con logo y nombre -->
+    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;">
+      <div style="font-weight:700; font-size:1.1rem;">
+        Representaciones Polimes S.A.S.
+      </div>
+      <img src="Images/polimes.png" 
+           alt="Logo Representaciones Polimes" 
+           style="width:120px; height:auto; border-radius:6px; object-fit:contain;">
+    </div>
+
+    <!-- Texto -->
+    <div style="font-size:0.95rem; color:#333;">
+      En Representaciones Polimes S.A.S., lideré  la implementación del 
+      <strong>Sistema Integral de Prevención de Lavado de Activos y Financiación del Terrorismo (SIPLA/LAFT)</strong>, 
+      desarrollando políticas, procedimientos y herramientas de control para garantizar la transparencia 
+      y la trazabilidad en las operaciones. Actualmente, desempeño funciones relacionadas con la 
+      gestión de riesgos y la supervisión como oficial de cumplimiento,asegurando la adopción de buenas prácticas corporativas y el alineamiento con la normatividad  nacional e internacional.
     </div>
   </div>
-
-<h1 class="nuestros-servicios">NUESTROS SERVICIOS</h1>
-
-<div class="servicios-container">
- <div id="almacenamiento" class="servicio">
-  <h1>Almacenamiento de contenedores llenos</h1>
-  <div class="about-content">
-    <img src="images/almacenamiento.png" alt="Almacenamiento">
-    <p>Nuestras áreas de almacenamiento albergan contenedores llenos en origen o en destino, tanto para consolidación como para desconsolidación de mercancía. Sin importar que tu carga en tránsito esté en espera de los trámites aduaneros o un trastorno inesperado que esté causando la ralentización de tu envío, obtendrás una mayor flexibilidad para gestionar tu cadena de suministro. Con bajo costo de almacenamiento, también puedes utilizar nuestros patios de contenedores para reducir los inventarios en tu fábrica o centros de distribución.</p>
-   </div>
-  </div>
-
-
- <div id="Reparacion" class="servicio">
-  <h1>Reparación de contenedores</h1>
-   <div class="about-content">
-    <img src="images/reparacion.png" alt="Reparacion">
-    <p>Maersk brinda un servicio integral de reparación de contenedores, enfocado en mantener la seguridad, funcionalidad y vida útil de cada unidad. A través de inspecciones detalladas, se realizan reparaciones estructurales, ajustes de puertas, pisos y paneles, así como limpieza y reacondicionamiento. El proceso es ágil, trazable y ejecutado por personal especializado, garantizando contenedores listos para operar de forma segura y eficiente en toda la cadena logística.</p>
-   </div>
- </div>
-
- <div id="pre-trip" class="servicio">
-  <h1>Inspección Previa al Viaje (PTI) </h1>
-   <div class="about-content">
-    <img src="images/pretrip.png" alt="Reparacion">
-    <p>Maersk ofrece el servicio de Pre-Trip Inspection (PTI) para asegurar que los contenedores refrigerados (reefers) estén en óptimas condiciones antes de ser cargados. Esta inspección técnica incluye la revisión completa del sistema de refrigeración, pruebas de temperatura, verificación de componentes eléctricos y limpieza interior. El objetivo es garantizar un rendimiento eficiente y confiable durante el transporte de carga sensible. </p>
-   </div>
- </div>
 </div>
 
-  <!-- FIREBASE -->
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-    import { getFirestore, collection, query, where, getDocs, addDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-    const firebaseConfig = {
-      apiKey: "AIzaSyAGpefaI4KKoUzKbmAUp_QHH1QCJJon6Dg",
-      authDomain: "agendapatio-bd75e.firebaseapp.com",
-      projectId: "agendapatio-bd75e",
-      storageBucket: "agendapatio-bd75e.appspot.com",
-      messagingSenderId: "2629668570",
-      appId: "1:2629668570:web:13ac210ecf525e09a99fe3",
-      measurementId: "G-E6XPFLQVQR"
-    };
+    </section>
+<!-- CONTACTO -->
+<section id="contacto" class="section">
+  <h2 class="section-title">Contacto</h2>
+  <p class="lead">Envíame tu consulta o solicita una cotización. Respondo a la mayor brevedad.</p>
 
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
+  <div style="display:grid; grid-template-columns:1fr 380px; gap:16px; margin-top:12px;">
+    <!-- FORMULARIO PRINCIPAL -->
+    <form id="contactForm" class="card" action="https://formsubmit.co/danizabas@gmail.com" method="POST">
+      <!-- Configuración interna -->
+      <input type="hidden" name="_subject" value="Nueva solicitud - Sitio web Daniel Z.">
+      <input type="hidden" name="_captcha" value="false">
+      <input type="hidden" name="carrito_resumen" id="carrito_resumen" value="">
+      <input type="hidden" name="_template" value="box">
+      <!-- Si luego creas tu página de gracias, descomenta la siguiente línea -->
+      <!-- <input type="hidden" name="_next" value="https://danielzabala.me/gracias.html"> -->
 
- window.agendarCita = async () => {
-  const transportadora = document.getElementById("transportadora").value.trim();
-  const conductor = document.getElementById("conductor").value.trim();
-  const placa = document.getElementById("placa").value.trim();
-  const fecha = document.getElementById("fecha").value;
-  const franja = document.getElementById("franja").value;
+      <div style="margin-bottom:10px">
+        <label class="small">Nombre</label>
+        <input type="text" name="Nombre" id="c-name" required>
+      </div>
 
-  const success = document.getElementById("successMessage");
-  const error = document.getElementById("errorMessage");
+      <div style="margin-bottom:10px">
+        <label class="small">Correo electrónico</label>
+        <input type="email" name="Email" id="c-email" required>
+      </div>
 
-  // Oculta mensajes previos
-  success.style.display = "none";
-  error.style.display = "none";
+      <div style="margin-bottom:10px">
+        <label class="small">Teléfono (opcional)</label>
+        <input type="text" name="Telefono" id="c-phone">
+      </div>
 
-  if (!transportadora || !conductor || !placa || !fecha || !franja) {
-    alert("Por favor completa todos los campos.");
-    return;
-  }
+      <div style="margin-bottom:10px">
+        <label class="small">Mensaje</label>
+        <textarea name="Mensaje" id="c-message" required></textarea>
+      </div>
 
-  const citasRef = collection(db, "citas");
-  const q = query(citasRef, where("fecha", "==", fecha), where("franjaHoraria", "==", franja));
-  const snapshot = await getDocs(q);
+      <div style="display:flex; gap:10px; align-items:center;">
+        <button type="submit" class="cta">Enviar mensaje</button>
+        <div class="muted small">O escríbeme por WhatsApp</div>
+      </div>
 
-  if (!snapshot.empty) {
-    error.style.display = "flex";
-    return;
-  }
+      <!-- MENSAJE DE ÉXITO -->
+      <div id="success-message" style="display:none; margin-top:10px; color:green; font-weight:600;">
+        ✅ ¡Mensaje enviado correctamente! Gracias por contactarme.
+      </div>
+    </form>
 
-  await addDoc(citasRef, {
-    transportadora,
-    conductor,
-    placa,
-    fecha,
-    franjaHoraria: franja
-  });
+    <!-- ASIDE CON DATOS DIRECTOS -->
+    <aside class="card">
+      <div style="font-weight:700">Contacto directo</div>
+      <div class="small muted" style="margin-top:8px">
+        Email: <a href="mailto:danizabas@gmail.com">danizabas@gmail.com</a>
+      </div>
+      <div class="small muted" style="margin-top:6px">
+        WhatsApp: <a href="https://wa.me/573016921801" target="_blank" rel="noopener">+57 301 692 1801</a>
+      </div>
 
-  success.style.display = "flex";
-  limpiarFormulario();
+      <div style="margin-top:14px">
+        <div style="font-weight:700; margin-bottom:6px">Suscríbete</div>
+        <div style="display:flex; gap:8px">
+          <input id="newsletter" placeholder="tu@email.com">
+          <button id="sub-btn" class="btn-outline">Suscribirme</button>
+        </div>
+        <div class="muted small" style="margin-top:10px">
+          Recibirás recursos y ofertas. Respetamos tu privacidad.
+        </div>
+      </div>
 
-  // Oculta mensaje de éxito tras 3 segundos
-  setTimeout(() => {
-    success.style.display = "none";
-  }, 3000);
-};
+      <div class="small muted" style="margin-top:10px">
+        LinkedIn:
+        <a href="https://www.linkedin.com/in/daniel-zabala-solano-950a61122"
+           target="_blank" rel="noopener">
+          daniel-zabala-solano-950a61122
+        </a>
+      </div>
+    </aside>
+  </div>
+</section>
 
-    function mostrarMensaje() {
-      const mensaje = document.getElementById("mensajeExito");
-      mensaje.style.display = "block";
-      setTimeout(() => mensaje.style.display = "none", 3000);
-    }
-
-    function limpiarFormulario() {
-      document.getElementById("transportadora").value = "";
-      document.getElementById("conductor").value = "";
-      document.getElementById("placa").value = "";
-      document.getElementById("fecha").value = "";
-      document.getElementById("franja").value = "";
-    }
-
-    window.aceptarNormas = () => {
-      document.getElementById("modalNormas").style.display = "none";
-      document.getElementById("formularioCitas").style.display = "block";
-    };
-  </script>
+<!-- SCRIPT DE CONFIRMACIÓN -->
 <script>
-  function toggleMenu() {
-    const nav = document.getElementById("nav");
-    nav.classList.toggle("show");
-  }
+  // Evita el error al enviar y muestra mensaje de éxito
+  document.getElementById('contactForm').addEventListener('submit', function (e) {
+    // Puedes quitar este preventDefault si quieres que se envíe normalmente
+    e.preventDefault();
+
+    // Simula el envío real a FormSubmit
+    fetch(this.action, {
+      method: 'POST',
+      body: new FormData(this)
+    }).then(response => {
+      if (response.ok) {
+        document.getElementById('success-message').style.display = 'block';
+        this.reset();
+      } else {
+        alert('❌ Ocurrió un error al enviar. Intenta nuevamente.');
+      }
+    }).catch(error => {
+      alert('⚠️ Error de conexión. Por favor, revisa tu red.');
+    });
+  });
 </script>
 
+
+    <!-- FOOTER -->
+    <footer>
+      <div class="container" style="display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap;">
+        <div>
+          <strong>© <span id="year"></span> Daniel Zabala</strong>
+          <div class="muted small">Ingeniería - SIG - Aprendizaje</div>
+        </div>
+        <div style="display:flex; gap:12px; align-items:center;">
+          <a href="#politica" class="mini">Política de privacidad</a>
+          <a href="#terminos" class="mini">Términos y Condiciones</a>
+        </div>
+      </div>
+    </footer>
+  </main>
+
+  <a class="whatsapp" href="https://wa.me/573016921801" target="_blank" rel="noopener">WhatsApp</a>
+
+  <script>
+    // Set year
+    document.getElementById('year').textContent = new Date().getFullYear();
+
+    // Cart logic (client-side demo)
+    const cart = [];
+    function updateCartUI(){
+      const list = document.getElementById('cart-list');
+      const count = document.getElementById('cart-count');
+      list.innerHTML = '';
+      if(cart.length === 0){
+        list.innerHTML = '<div class="muted">Tu carrito está vacío.</div>';
+        count.textContent = 0;
+        return;
+      }
+      count.textContent = cart.length;
+      const ul = document.createElement('div');
+      cart.forEach((item, index) => {
+        const row = document.createElement('div');
+        row.style.display = 'flex';
+        row.style.justifyContent = 'space-between';
+        row.style.alignItems = 'center';
+        row.style.padding = '8px 0';
+        row.innerHTML = '<div style="max-width:70%"><div style="font-weight:700">'+item.title+'</div><div class="small muted">'+(item.price ? ('$'+item.price) : '')+'</div></div>';
+        const btn = document.createElement('button');
+        btn.textContent = 'Quitar';
+        btn.style.background = 'transparent';
+        btn.style.border = 'none';
+        btn.style.color = '#ef4444';
+        btn.style.cursor = 'pointer';
+        btn.onclick = () => { cart.splice(index,1); updateCartUI(); updateHiddenCart(); };
+        row.appendChild(btn);
+        ul.appendChild(row);
+      });
+      list.appendChild(ul);
+      updateHiddenCart();
+    }
+
+    function updateHiddenCart() {
+      const resumen = cart.map(i => i.title + (i.price ? (' - $'+i.price) : '')).join('\\n');
+      document.getElementById('carrito_resumen').value = resumen;
+      // Also prefill message in form for convenience
+      const msg = document.getElementById('c-message');
+      if(msg){
+        const base = msg.value.split('\\n\\n--Resumen--')[0];
+        msg.value = (base ? base + '\\n\\n--Resumen--\\n' : '--Resumen--\\n') + resumen;
+      }
+    }
+
+    document.querySelectorAll('.add-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const id = btn.getAttribute('data-id');
+        const title = btn.getAttribute('data-title');
+        const price = btn.getAttribute('data-price');
+        cart.push({id, title, price: price ? Number(price) : null});
+        updateCartUI();
+        // small feedback
+        btn.textContent = 'Agregado';
+        setTimeout(()=> btn.textContent = 'Agregar', 1200);
+      });
+    });
+
+    document.getElementById('clear-cart').addEventListener('click', () => {
+      cart.length = 0;
+      updateCartUI();
+    });
+
+    // newsletter quick demo
+    document.getElementById('sub-btn').addEventListener('click', (e) => {
+      e.preventDefault();
+      const v = document.getElementById('newsletter').value.trim();
+      if(!v){ alert('Ingresa un correo válido'); return; }
+      alert('Gracias. Demo: ' + v + '\\n(implementar lista real con MailerLite / Mailchimp / ConvertKit)');
+      document.getElementById('newsletter').value = '';
+    });
+
+    // on submit: add cart summary into hidden input (redundant but safe)
+    document.getElementById('contactForm').addEventListener('submit', function(e){
+      // ensure carrito resumen actualizado
+      updateHiddenCart();
+      // formsubmit.co will send email to danizabas@gmail.com after verification
+      // Note: the first submission triggers a verification email to your address
+      // (you must click the verification link to activate)
+    });
+
+    // Initialize UI
+    updateCartUI();
+  </script>
 </body>
 </html>
-
-
